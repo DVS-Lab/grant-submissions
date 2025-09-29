@@ -1,0 +1,635 @@
+---
+title: "R03-Support"
+author: "Cooper Joseph Sharp"
+date: "2025-04-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+
+library(dplyr)
+library(conflicted)
+
+conflict_prefer("select", "dplyr")
+
+```
+
+
+```{r}
+
+# Load input data
+data <- read.csv("")
+
+```
+
+```{r}
+
+# Remove row of labels to help with the index
+data = data[-c(1), ] 
+
+```
+
+```{r}
+
+# Remove people who failed attention checks, if applicable.
+# Update with support qualtrics attention check 
+
+data <- data[data$ == 3, ]
+
+
+```
+
+```{r}
+
+# Demographics scoring
+
+# Select relevant columns
+demo_scoring <- data %>%
+  select(ResponseId, starts_with("demo_"))
+
+```
+
+```{r}
+
+# SES scoring
+
+# Select relevant columns
+ses_scoring <- data %>%
+  select(ResponseId, starts_with("ses_"))
+
+```
+
+```{r}
+
+# Select relevant columns
+bbgs_data <- data %>%
+  select(ResponseId, starts_with("bbgs"))
+
+bbgs_cols <- grep("^bbgs_", names(bbgs_data), value = TRUE)
+bbgs_data[bbgs_cols] <- lapply(bbgs_data[bbgs_cols], function(x) as.numeric(x) - 0)
+
+# Create subscale and total scores
+bbgs_data <- bbgs_data %>%
+  mutate(
+    bbgs_total = rowSums(bbgs_data[c(2:4)], na.rm=TRUE),
+    prob_gam_two = ifelse(bbgs_total > 4, "yes", "no")
+  )
+
+# Create subscale and total scores
+bbgs_data <- bbgs_data %>%
+  mutate(
+    bbgs_total = rowSums(bbgs_data[c(2:4)], na.rm=TRUE),
+    prob_gam = ifelse(bbgs_total > 3, "yes", "no")
+  )
+
+library(dplyr)
+
+# Select relevant columns
+bbgs_scoring <- bbgs_data %>%
+  select(ResponseId, bbgs_total, prob_gam, prob_gam_two, bbgs_cols)
+
+write.csv(bbgs_scoring, "../../derivatives/bbgs_scoring.csv", row.names = FALSE)
+
+```
+
+```{r}
+
+# Select relevant columns
+bisbas_data <- data %>%
+  select(ResponseId, starts_with("bisbas_matrix_"))
+
+# Get the original BISBAS item columns
+q_cols <- grep("^bisbas_matrix_", names(bisbas_data), value = TRUE)
+
+# Renumber BISBAS items as bisbas_matrix_1, bisbas_matrix_2, ...
+new_q_names <- paste0("bisbas_matrix_", seq_along(q_cols))
+names(bisbas_data)[match(q_cols, names(bisbas_data))] <- new_q_names
+
+# Remove rows with any NAs
+# bisbas_data <- bisbas_data %>%
+#  filter(complete.cases(.))
+
+# Define items to reverse (from your note)
+reverse_items <- c(5, 7)
+
+# Reverse score: assuming original scale is 1–4
+for (i in reverse_items) {
+  col_name <- paste0("bisbas_matrix_", i)
+  bisbas_data[[col_name]] <- 4 - as.numeric(bisbas_data[[col_name]])
+}
+
+# Optional: convert all remaining items to numeric just to be safe
+for (i in 1:20) {
+  col_name <- paste0("bisbas_matrix_", i)
+  bisbas_data[[col_name]] <- as.numeric(bisbas_data[[col_name]])
+}
+
+# Define SCAARED subscale items
+bisbas_reward_res    <- paste0("bisbas_matrix_", c(16, 17, 18, 19, 20))
+bisbas_drive         <- paste0("bisbas_matrix_", c(8, 9, 10, 11))
+bisbas_fun_seek      <- paste0("bisbas_matrix_", c(12, 13, 14, 15))
+bisbas_bis           <- paste0("bisbas_matrix_", c(1, 2, 3, 4, 5, 6, 7))
+
+# Create subscale and total scores
+bisbas_data <- bisbas_data %>%
+  mutate(
+    bisbas_reward_res = rowSums(select(., all_of(bisbas_reward_res))),
+    bisbas_drive    = rowSums(select(., all_of(bisbas_drive))),
+    bisbas_fun_seek   = rowSums(select(., all_of(bisbas_fun_seek))),
+    bisbas_bis   = rowSums(select(., all_of(bisbas_bis)))
+  )
+
+# Select relevant columns
+bisbas_scoring <- bisbas_data
+
+write.csv(bisbas_scoring, "../../derivatives/bisbas_scoring.csv", row.names = FALSE)
+
+```
+
+```{r}
+
+# Select relevant columns
+dospert_data <- data %>%
+  select(ResponseId, starts_with("dospert"))
+
+# Convert all dospert items to numeric and adjust scale
+# Responses were coded in Qualtrics as 1,2,3 but need to be 0,1,2
+dospert_cols <- grep("^dospert_matrix_", names(dospert_data), value = TRUE)
+dospert_data[dospert_cols] <- lapply(dospert_data[dospert_cols], function(x) as.numeric(x) - 1)
+
+# Define dospert subscale items
+dospert_ethic            <- paste0("dospert_matrix_", c(5, 9, 12, 13, 14, 20, 25, 28))
+dospert_financial        <- paste0("dospert_matrix_", c(3, 7, 11, 18, 22, 24, 30, 33))
+dospert_hs               <- paste0("dospert_matrix_", c(4, 8, 27, 29, 32, 36, 39, 40))
+dospert_rec              <- paste0("dospert_matrix_", c(2, 6, 15, 17, 21, 31, 37, 38))
+dospert_soc              <- paste0("dospert_matrix_", c(1, 10, 16, 19, 23, 26, 34, 35))
+dospert_inv              <- paste0("dospert_matrix_", c(7, 18, 24, 30))
+dospert_gam              <- paste0("dospert_matrix_", c(3, 11, 22, 33))
+
+
+# Create subscale and total scores
+dospert_data <- dospert_data %>%
+  mutate(
+    dospert_ethic = rowSums(select(., all_of(dospert_ethic))),
+    dospert_financial    = rowSums(select(., all_of(dospert_financial))),
+    dospert_hs   = rowSums(select(., all_of(dospert_hs))),
+    dospert_rec   = rowSums(select(., all_of(dospert_rec))),
+    dospert_soc   = rowSums(select(., all_of(dospert_soc))),
+    dospert_inv   = rowSums(select(., all_of(dospert_inv))),
+    dospert_gam   = rowSums(select(., all_of(dospert_gam)))
+  )
+
+# Select relevant columns
+dospert_scoring <- dospert_data %>%
+  select(ResponseId, dospert_ethic, dospert_financial, dospert_hs, dospert_rec, dospert_inv, dospert_gam, dospert_soc)
+
+write.csv(dospert_scoring, "../../derivatives/dospert_scoring.csv", row.names = FALSE)
+
+```
+
+```{r}
+
+# Select relevant columns
+fevs_data <- data %>%
+  select(ResponseId, starts_with("fevs"))
+
+# Convert all SCAARED items to numeric and adjust scale
+# Responses were coded in Qualtrics as 1,2,3 but need to be 0,1,2
+fevs_cols <- grep("^fevs_", names(fevs_data), value = TRUE)
+fevs_data[fevs_cols] <- lapply(fevs_data[fevs_cols], function(x) as.numeric(x) - 1)
+
+# Create subscale and total scores
+fevs_data <- fevs_data %>%
+  mutate(
+    fevs_total = rowSums(fevs_data[c(3:10)], na.rm=TRUE))
+
+# Select relevant columns
+fevs_scoring <- fevs_data %>%
+  select(ResponseId, fevs_total)
+
+write.csv(fevs_data, "../../derivatives/fevs_scoring.csv", row.names = FALSE)
+
+```
+
+```{r}
+
+# Select relevant columns
+gsas_data <- data %>%
+  select(ResponseId, starts_with("gsas"))
+
+gsas_cols <- grep("^gsas_", names(gsas_data), value = TRUE)
+gsas_data[gsas_cols] <- lapply(gsas_data[gsas_cols], function(x) as.numeric(x) - 1)
+
+# Convert selected columns to numeric
+gsas_data[, grep("^gsas_\\d+$", names(gsas_data))] <- lapply(
+  gsas_data[, grep("^gsas_\\d+$", names(gsas_data))],
+  as.numeric
+)
+
+gsas_urge <- paste0("gsas_", c(1, 2, 3, 4))
+gsas_thought <- paste0("gsas_", c(5, 6, 7, 8))
+
+# Create subscale and total scores
+gsas_data <- gsas_data %>%
+  mutate(
+    gsas_urge = rowSums(select(., all_of(gsas_urge))),
+    gsas_thought = rowSums(select(., all_of(gsas_thought))),
+  )
+
+
+# Create subscale/total score
+gsas_data <- gsas_data %>%
+  mutate(gsas_total = rowSums(across(matches("^gsas_\\d+$")), na.rm = TRUE))
+
+# Select relevant columns
+gsas_scoring <- gsas_data %>%
+  select(ResponseId, gsas_total, gsas_urge, gsas_thought)
+
+write.csv(gsas_data, "../../derivatives/gsas_scoring.csv", row.names = FALSE)
+
+```
+
+```{r}
+
+# Select relevant columns
+mandf_data <- data %>%
+  select(ResponseId, starts_with("mandf"))
+
+# Convert all SCAARED items to numeric and adjust scale
+# Responses were coded in Qualtrics as 1,2,3 but need to be 0,1,2
+mandf_cols <- grep("^mandf_", names(mandf_data), value = TRUE)
+mandf_data[mandf_cols] <- lapply(mandf_data[mandf_cols], function(x) as.numeric(x) - 0)
+
+# Select relevant columns
+mandf_scoring <- mandf_data %>%
+  select(ResponseId, starts_with("mandf"))
+
+write.csv(mandf_data, "../../derivatives/mandf_scoring.csv", row.names = FALSE)
+
+```
+
+```{r}
+
+# Select relevant columns
+planfullness_data <- data %>%
+  select(ResponseId, starts_with("Q341_")) %>%
+  select(-Q341_24)  # Remove attention check
+
+# Get just the Q341_ columns
+q_cols <- grep("^Q341_", names(planfullness_data), value = TRUE)
+
+# Renumber Q341_ columns
+new_q_names <- paste0("Q341_", seq_along(q_cols))
+names(planfullness_data)[names(planfullness_data) %in% q_cols] <- new_q_names
+
+# Remove rows with any NAs
+# planfullness_data <- planfullness_data %>%
+#  filter(complete.cases(.))
+
+# Define items to reverse (from your note)
+reverse_items <- c(2, 3, 4, 6, 10, 11, 12, 13, 18, 20, 21, 22, 25, 29, 30)
+
+# Reverse score: assuming original scale is 1–5
+for (i in reverse_items) {
+  col_name <- paste0("Q341_", i)
+  planfullness_data[[col_name]] <- 6 - as.numeric(planfullness_data[[col_name]])
+}
+
+# Optional: convert all remaining items to numeric just to be safe
+for (i in 1:30) {
+  col_name <- paste0("Q341_", i)
+  planfullness_data[[col_name]] <- as.numeric(planfullness_data[[col_name]])
+}
+
+# Example: Planfulness Total Score
+planfullness_data <- planfullness_data %>%
+  mutate(planfulness_mean = rowSums(select(., starts_with("Q341_"))) / 30)
+
+# Select relevant columns
+planfullness_scoring <- planfullness_data %>%
+  select(ResponseId, planfulness_mean)
+
+write.csv(planfullness_data, "../../derivatives/planfullness_scoring.csv", row.names = FALSE)
+
+```
+
+```{r}
+
+# Select relevant columns
+sas_data <- data %>%
+  select(ResponseId, sas_own, starts_with("sas_matrix_"))
+
+# Optional: convert all remaining items to numeric just to be safe
+for (i in 1:10) {
+  col_name <- paste0("sas_matrix_", i)
+  sas_data[[col_name]] <- as.numeric(sas_data[[col_name]])
+}
+
+sas_data <- sas_data %>%
+  mutate(
+    sas_total = rowSums(across(starts_with("sas_matrix_")), na.rm = TRUE)
+  )
+
+# Select relevant columns
+sas_scoring <- sas_data %>%
+  select(ResponseId, sas_own, sas_total)
+
+write.csv(sas_data, "../../derivatives/sas_scoring.csv", row.names = FALSE)
+
+```
+
+```{r}
+
+# Select relevant columns
+scaared_data <- data %>%
+  select(ResponseId, starts_with("scared_a"))
+
+# Convert all SCAARED items to numeric and adjust scale
+# Responses were coded in Qualtrics as 1,2,3 but need to be 0,1,2
+scared_cols <- grep("^scared_a_matrix_", names(scaared_data), value = TRUE)
+scaared_data[scared_cols] <- lapply(scaared_data[scared_cols], function(x) as.numeric(x) - 1)
+
+# Define SCAARED subscale items
+scared_total     <- paste0("scared_a_matrix_", c(1:44))
+scared_pa_so     <- paste0("scared_a_matrix_", c(1, 2, 6, 9, 11, 12, 15, 17, 18, 19, 22, 25, 28, 32, 36, 38, 40))
+scared_ga        <- paste0("scared_a_matrix_", c(5, 7, 8, 14, 21, 23, 24, 29, 31, 35, 37, 39, 44))
+scared_sep       <- paste0("scared_a_matrix_", c(4, 13, 16, 20, 26, 30, 33))
+scared_soc       <- paste0("scared_a_matrix_", c(3, 10, 27, 34, 41, 42, 43))
+
+# Create subscale and total scores
+scaared_data <- scaared_data %>%
+  mutate(
+    scared_total = rowSums(select(., all_of(scared_total))),
+    scared_pa_so = rowSums(select(., all_of(scared_pa_so))),
+    scared_ga    = rowSums(select(., all_of(scared_ga))),
+    scared_sep   = rowSums(select(., all_of(scared_sep))),
+    scared_soc   = rowSums(select(., all_of(scared_soc)))
+  )
+
+# Select relevant columns
+scaared_scoring <- scaared_data %>%
+  select(ResponseId, scared_total, scared_pa_so, scared_ga, scared_sep, scared_soc)
+
+write.csv(scaared_data, "../../derivatives/scaared_scoring.csv", row.names = FALSE)
+
+```
+
+```{r}
+
+library(dplyr)
+
+# Define column sets
+sogs_15 <- "sogs_15"
+sogs_16_17 <- paste0("sogs_", 16:17)
+sogs_18_22 <- paste0("sogs_", 18:22)
+sogs_24_26 <- paste0("sogs_", 24:26)
+sogs_28_35 <- paste0("sogs_", 28:35)
+
+# Combine all for selection
+sogs_cols <- c(sogs_15, sogs_16_17, sogs_18_22, sogs_24_26, sogs_28_35)
+
+# Select and convert to numeric
+sogs_data <- data %>%
+  select(ResponseId, sogs_yn, all_of(sogs_cols)) %>%
+  mutate(across(all_of(sogs_cols), as.numeric))
+
+# Scoring logic
+sogs_data <- sogs_data %>%
+  mutate(
+    sogs_total =
+      ifelse(.data[[sogs_15]] %in% c(3, 4), 1, 0) +
+      rowSums(across(all_of(sogs_16_17), ~ ifelse(. %in% c(2, 3), 1, 0)), na.rm = TRUE) +
+      rowSums(across(all_of(sogs_18_22), ~ ifelse(. == 1, 1, 0)), na.rm = TRUE) +
+      rowSums(across(all_of(sogs_24_26), ~ ifelse(. == 1, 1, 0)), na.rm = TRUE) +
+      rowSums(across(all_of(sogs_28_35), ~ ifelse(. == 1, 1, 0)), na.rm = TRUE),
+
+    sogs_classification = case_when(
+      sogs_total >= 5 ~ "Probable pathological gambler",
+      sogs_total >= 1 & sogs_total <= 4 ~ "Some problems with gambling",
+      sogs_total == 0 ~ "No problems reported",
+      TRUE ~ NA_character_
+    )
+  )
+
+
+
+# Final output
+sogs_scoring <- sogs_data %>%
+  select(ResponseId, sogs_yn, sogs_total, sogs_classification)
+
+write.csv(sogs_data, "../../derivatives/sogs_scoring.csv", row.names = FALSE)
+
+```
+
+```{r}
+
+# Select relevant columns
+spsrq_data <- data %>%
+  select(ResponseId, starts_with("spsrq_matrix_"))
+
+# Optional: convert all remaining items to numeric just to be safe
+for (i in 1:20) {
+  col_name <- paste0("spsrq_matrix_", i)
+  spsrq_data[[col_name]] <- as.numeric(spsrq_data[[col_name]])
+}
+
+spsrq_sr <- paste0("spsrq_matrix_", c(2, 4, 6, 8, 10, 12, 14, 16, 18, 20))
+spsrq_sp <- paste0("spsrq_matrix_", c(1, 3, 5, 7, 9, 11, 13, 15, 17, 19))
+
+
+# Create subscale and total scores
+spsrq_data <- spsrq_data %>%
+  mutate(
+    spsrq_sr = rowSums(select(., all_of(spsrq_sr))),
+    spsrq_sp   = rowSums(select(., all_of(spsrq_sp)))
+  )
+
+
+# Select relevant columns
+spsrq_scoring <- spsrq_data %>%
+  select(ResponseId, spsrq_sr, spsrq_sp)
+
+write.csv(spsrq_data, "../../derivatives/spsrq_scoring.csv", row.names = FALSE)
+
+```
+
+```{r}
+
+# Select relevant columns
+susd_data <- data %>%
+  select(ResponseId, starts_with("susd_matrix_"))
+
+# Get just the Q341_ columns
+q_cols <- grep("^susd_matrix_", names(susd_data), value = TRUE)
+
+# Renumber Q341_ columns
+new_q_names <- paste0("susd_matrix_", seq_along(q_cols))
+names(susd_data)[names(susd_data) %in% q_cols] <- new_q_names
+
+# Remove rows with any NAs
+# susd_data <- susd_data %>%
+#  filter(complete.cases(.))
+
+# Optional: convert all remaining items to numeric just to be safe
+for (i in 1:14) {
+  col_name <- paste0("susd_matrix_", i)
+  susd_data[[col_name]] <- as.numeric(susd_data[[col_name]])
+}
+
+# Define SCAARED subscale items
+susd_depression <- paste0("susd_matrix_", c(2, 5, 9, 10, 11, 12, 14))
+susd_mania      <- paste0("susd_matrix_", c(1, 3, 4, 6, 7, 8, 13))
+
+
+# Create subscale and total scores
+susd_data <- susd_data %>%
+  mutate(
+    susd_depression = rowSums(select(., all_of(susd_depression))),
+    susd_mania   = rowSums(select(., all_of(susd_mania)))
+  )
+
+# Select relevant columns
+susd_scoring <- susd_data %>%
+  select(ResponseId, susd_depression, susd_mania)
+
+write.csv(susd_data, "../../derivatives/susd_scoring.csv", row.names = FALSE)
+
+```
+
+```{r}
+
+# Select relevant columns
+uclal_data <- data %>%
+  select(ResponseId, starts_with("uclal"))
+
+# Convert selected columns to numeric
+uclal_data[c("uclal_1", "uclal_2", "uclal_3")] <- lapply(uclal_data[c("uclal_1", "uclal_2", "uclal_3")], as.numeric)
+
+# Create subscale/total score
+uclal_data <- uclal_data %>%
+  mutate(uclal_total = rowSums(across(c("uclal_1", "uclal_2", "uclal_3")), na.rm = TRUE))
+
+# Select relevant columns
+uclal_scoring <- uclal_data %>%
+  select(ResponseId, uclal_total)
+
+write.csv(uclal_data, "../../derivatives/uclal_scoring.csv", row.names = FALSE)
+
+```
+
+```{r}
+
+# Select relevant columns
+usidep_data <- data %>%
+  select(ResponseId, starts_with("usidep_"))
+
+# Get just the Q341_ columns
+q_cols <- grep("^usidep_", names(usidep_data), value = TRUE)
+
+# Renumber Q341_ columns
+new_q_names <- paste0("usidep_", seq_along(q_cols))
+names(usidep_data)[names(usidep_data) %in% q_cols] <- new_q_names
+
+# Remove rows with any NAs
+# usidep_data <- usidep_data %>%
+#  filter(complete.cases(.))
+
+# Optional: convert all remaining items to numeric just to be safe
+for (i in 1:8) {
+  col_name <- paste0("usidep_", i)
+  usidep_data[[col_name]] <- as.numeric(usidep_data[[col_name]])
+}
+
+# Count number of 1s in each row
+usidep_data <- usidep_data %>%
+  mutate(usidep_total = rowSums(across(starts_with("usidep_"), ~ . == 1)))
+
+usidep_data <- usidep_data %>%
+  mutate(
+    usidep_total = rowSums(across(starts_with("usidep_"), ~ . == 1)),
+    usidep_classification = case_when(
+      usidep_total == 0 ~ 1,
+      usidep_total == 1 ~ 2,
+      usidep_total == 2 ~ 3,
+      usidep_total %in% c(3, 4) ~ 4,
+      usidep_total >= 5 ~ 5
+    )
+  )
+
+# Select relevant columns
+usidep_scoring <- usidep_data %>%
+  select(ResponseId, usidep_total, usidep_classification)
+
+# Create a frequency table
+class_counts <- table(usidep_data$usidep_classification)
+
+write.csv(usidep_data, "../../derivatives/usidep_scoring.csv", row.names = FALSE)
+
+```
+
+```{r}
+
+library(dplyr)
+
+# Change this to capture "probable problem gambler instead" 
+# There is another group of people where they WERE gamblers in the past, but not in the past week/year. 
+# Probably should look at GSAS and monthly frequency (mandf_*g)
+# Code this up so that we can plot -- 
+  # no history (Zeroes across the board), 
+  # some history but not current (no BBGS/GSAS/mandf, but not worst on SOGS), 
+  # current (high cutoff for BBGS and SOGS)
+
+pg_data <- bbgs_scoring %>%
+  inner_join(sogs_scoring, by = "ResponseId") %>%
+  inner_join(mandf_scoring, by = "ResponseId") %>%
+  inner_join(gsas_scoring, by = "ResponseId") %>%
+  mutate(
+pg_one_item = case_when(
+  bbgs_total < 4 ~ "non-PG",
+  bbgs_total >= 4 ~ "PG",
+  TRUE ~ "no match"
+    ),
+)
+
+pg_scoring <- pg_data %>%
+  select(ResponseId, pg_one_item)
+
+write.csv(pg_scoring, "../../derivatives/pg_scoring.csv", row.names = FALSE)
+
+```
+
+
+```{r}
+
+# Dynamically get all *_scoring data frames from the global environment
+scoring_dfs <- mget(ls(pattern = "_scoring$", envir = .GlobalEnv), envir = .GlobalEnv)
+
+# Merge all by "ResponseId"
+merged_scoring <- Reduce(function(x, y) merge(x, y, by = "ResponseId", all = TRUE), scoring_dfs)
+
+# Exclude anyone from the dataset that had higher score on bbgs but nothing on sogs
+# merged_scoring <- merged_scoring[!(merged_scoring$bbgs_total > 3 & merged_scoring$sogs_classification == "No problems reported"), ]
+
+# Write the result to CSV
+write.csv(merged_scoring, "../../derivatives/scoring-mastersheet.csv", row.names = FALSE)
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
