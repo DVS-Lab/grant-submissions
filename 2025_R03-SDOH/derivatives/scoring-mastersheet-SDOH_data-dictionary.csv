@@ -1,0 +1,24 @@
+﻿Variable Name,Description,Prompt,Options
+demo_yrs,Age in years,"At the time of taking this survey, how old are you in years? ",Free
+demo_dob,Date of birth,What is your date of birth (mm/dd/yyyy)?,(mm/dd/yyyy)
+demo_gender,Gender,What is your gender? ,"[1, Male; 2, Female; 3, Non-Binary; 4, Other]"
+demo_sab,Sex,What is your sex assigned at birth? ,"[1, Male; 2, Female; 3, Other; 4, Prefer not to say]"
+demo_race,Race,What is your race?,"[1, American-Indian / Alaskan Native; 2, Asian; 3, Native Hawaiian or Pacific Islander; 4, Black or African American; 5, White; 6, Two or more races, or race not described (Other); 7, Prefer not to respond]"
+demo_eth,Ethnicity,What is your ethnicity? ,"[1, Hispanic or Latino; 2, Not Hispanic or Latino; 3, Ethnicity not described (Other)]"
+demo_state,FIPS State,In which state is your current primary residence?,
+demo_zip_prim,FIPS Zip Code,What is the zip code of your current primary residence? ,
+demo_zip_prim_yr,ZIP Code years of residence,How long have you lived in this zip code? ,"[1, Less than one year; 2, 1-5 years; 3, 6-10 years; 4, More than 10 years]"
+demo_quota,Residence geographic type,How would you describe the area in which you live? ,"[1, Urban; 2, Suburban; 3, Rural]"
+demo_state_ch,Childhood FIPS State,In which state did you spend most of your childhood (0-18 years)?,
+demo_zip_child,Childhood FIPS Zip Code,In what zip code did you spend most of your childhood (0-18 years)?,
+ses_edu,Level of Education,What is the highest level of education you have completed? ,"[1, Less than highschool; 2, High School; 3, Trade qualification or certification (e.g., carpentry, hairdressing); 4, GED; 5, Some university; 6,Bachelor Degree; 7, Postgraduate Degree]"
+ses_yoe,Years of Education,How many years of education do you have? (Graduating High School is 12 Years of Education),Free
+ses_thi,Total Household Income,What is your total household income (before tax is taken out)? ,"[1, $0-$25,000; 2, $26,000-$50,000; 3, $51,000-$75,000; 4, $76,000-$100,000; 5, $101,000-$150,000; 6, $151,000-$200,000; 7, Greater than $200,000]"
+ses_tpi,Total Personal Income,What is your total personal income (before tax is taken out)? ,"[1, $0-$25,000; 2, $26,000-$50,000; 3, $51,000-$75,000; 4, $76,000-$100,000; 5, $101,000-$150,000; 6, $151,000-$200,000; 7, Greater than $200,000]"
+ses_rentown,Rent or Own Residence,Do you currently rent or own the place you live? ,"[1, Rent; 2, Own (pay mortgage)]"
+ses_hhr,Household Members,How many members of your household are related to you? ,"[1, 1; 2, 2; 3, 3; 4, 4; 5, 5 or more; 6, I live alone; 7, I live with roomates] "
+prob_gam,Yes to any item on BBGS,,
+prob_gam_two,Yes to two items on BBGS,,
+ecog_score,Sum of items / number of items completed,,
+,,,
+,,,
