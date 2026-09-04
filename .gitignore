@@ -39,8 +39,8 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 
-# pkgdown site
-docs/
+# Root pkgdown site (allow project-level documentation directories)
+/docs/
 
 # translation temp files
 po/*~
@@ -48,3 +48,34 @@ po/*~
 # RStudio Connect folder
 rsconnect/
 .DS_Store
+
+# Private participant-level data
+**/PRIVATE*
+**/*PRIVATE*
+**/*crosswalk*
+**/*Crosswalk*
+**/*contact*
+**/*email_capture*
+
+# Raw survey / panel exports
+**/*Qualtrics*
+**/*REDCap*
+**/rawdata/
+**/raw-data/
+**/private-data/
+
+# Local participant-level source data
+**/sourcedata/*.xlsx
+**/sourcedata/*.xls
+**/sourcedata/*.csv
+**/sourcedata/*.tsv
+**/sourcedata/*.rds
+**/sourcedata/*.RData
+
+# Explicit local deidentified analytic sources
+**/*DEIDENTIFIED*.xlsx
+**/*DEIDENTIFIED*.csv
+
+# SDOH participant-level scoring outputs (aggregate CSVs remain allowed)
+2025_R03-SDOH/derivatives/*_scoring.csv
+2025_R03-SDOH/derivatives/scoring-mastersheet*.csv

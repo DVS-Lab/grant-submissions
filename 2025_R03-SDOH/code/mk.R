@@ -9,7 +9,11 @@ options(scipen = 999, digits = 2)
 options(scipen=999)
 options(digits=5)
 
-df <- read_csv("/Users/tur61139/Documents/GitHub/grant-submissions/2025_R03-SDOH/derivatives/scoring-mastersheet-SDOH.csv")
+private_master_path <- Sys.getenv("SDOH_PRIVATE_MASTER")
+if (!nzchar(private_master_path)) {
+  stop("Set SDOH_PRIVATE_MASTER to the private local scoring master.")
+}
+df <- read_csv(private_master_path)
 
 # Convert categorical vars to factors with clear references
 df <- df |>
@@ -356,4 +360,3 @@ fevs_lonely_income <- (lm(fevs_total ~ uclal_total_MC * ses_thi_MC +
                             ntb_total_MC + mspss_mean_MC, 
                           data = df))
 summary(fevs_lonely_income)
-

@@ -23,8 +23,24 @@ conflict_prefer("select", "dplyr")
 
 ```{r}
 
-# Load input data
-data <- read.csv("")
+# Load the private input without importing exact DOB. The source and all row-level
+# outputs must remain outside Git; see sourcedata/README.md.
+source_path <- Sys.getenv("SDOH_SOURCE_DATA")
+if (!nzchar(source_path)) {
+  stop("Set SDOH_SOURCE_DATA to the private local analytic source.")
+}
+
+private_derivatives_dir <- Sys.getenv(
+  "SDOH_PRIVATE_DERIVATIVES_DIR",
+  unset = "../../private-data/derived"
+)
+dir.create(private_derivatives_dir, recursive = TRUE, showWarnings = FALSE)
+
+data <- read.csv(
+  source_path,
+  colClasses = c(demo_dob = "NULL"),
+  check.names = FALSE
+)
 
 ```
 
@@ -37,10 +53,17 @@ data = data[-c(1), ]
 
 ```{r}
 
-# Remove people who failed attention checks, if applicable.
-# Update with support qualtrics attention check 
+# Remove people who failed the attention check. The source field must be named
+# explicitly because the intended Qualtrics column is not documented here.
+attention_check_field <- Sys.getenv("SDOH_ATTENTION_CHECK_FIELD")
+if (!nzchar(attention_check_field)) {
+  stop("Set SDOH_ATTENTION_CHECK_FIELD to the reviewed attention-check column.")
+}
+if (!attention_check_field %in% names(data)) {
+  stop("SDOH_ATTENTION_CHECK_FIELD is not present in the private source.")
+}
 
-data <- data[data$ == 3, ]
+data <- data[data[[attention_check_field]] == 3, ]
 
 
 ```
@@ -49,9 +72,19 @@ data <- data[data$ == 3, ]
 
 # Demographics scoring
 
-# Select relevant columns
+# Use an explicit analytic list. Exact DOB, current/childhood ZIP, state, and
+# residence-duration fields are intentionally excluded from scoring outputs.
+demographic_fields <- c(
+  "demo_yrs",
+  "demo_gender",
+  "demo_sab",
+  "demo_race",
+  "demo_eth",
+  "demo_quota"
+)
+
 demo_scoring <- data %>%
-  select(ResponseId, starts_with("demo_"))
+  select(ResponseId, all_of(demographic_fields))
 
 ```
 
@@ -94,7 +127,7 @@ library(dplyr)
 bbgs_scoring <- bbgs_data %>%
   select(ResponseId, bbgs_total, prob_gam, prob_gam_two, bbgs_cols)
 
-write.csv(bbgs_scoring, "../../derivatives/bbgs_scoring.csv", row.names = FALSE)
+write.csv(bbgs_scoring, file.path(private_derivatives_dir, "bbgs_scoring.csv"), row.names = FALSE)
 
 ```
 
@@ -148,7 +181,7 @@ bisbas_data <- bisbas_data %>%
 # Select relevant columns
 bisbas_scoring <- bisbas_data
 
-write.csv(bisbas_scoring, "../../derivatives/bisbas_scoring.csv", row.names = FALSE)
+write.csv(bisbas_scoring, file.path(private_derivatives_dir, "bisbas_scoring.csv"), row.names = FALSE)
 
 ```
 
@@ -189,7 +222,7 @@ dospert_data <- dospert_data %>%
 dospert_scoring <- dospert_data %>%
   select(ResponseId, dospert_ethic, dospert_financial, dospert_hs, dospert_rec, dospert_inv, dospert_gam, dospert_soc)
 
-write.csv(dospert_scoring, "../../derivatives/dospert_scoring.csv", row.names = FALSE)
+write.csv(dospert_scoring, file.path(private_derivatives_dir, "dospert_scoring.csv"), row.names = FALSE)
 
 ```
 
@@ -213,7 +246,7 @@ fevs_data <- fevs_data %>%
 fevs_scoring <- fevs_data %>%
   select(ResponseId, fevs_total)
 
-write.csv(fevs_data, "../../derivatives/fevs_scoring.csv", row.names = FALSE)
+write.csv(fevs_data, file.path(private_derivatives_dir, "fevs_scoring.csv"), row.names = FALSE)
 
 ```
 
@@ -251,7 +284,7 @@ gsas_data <- gsas_data %>%
 gsas_scoring <- gsas_data %>%
   select(ResponseId, gsas_total, gsas_urge, gsas_thought)
 
-write.csv(gsas_data, "../../derivatives/gsas_scoring.csv", row.names = FALSE)
+write.csv(gsas_data, file.path(private_derivatives_dir, "gsas_scoring.csv"), row.names = FALSE)
 
 ```
 
@@ -270,7 +303,7 @@ mandf_data[mandf_cols] <- lapply(mandf_data[mandf_cols], function(x) as.numeric(
 mandf_scoring <- mandf_data %>%
   select(ResponseId, starts_with("mandf"))
 
-write.csv(mandf_data, "../../derivatives/mandf_scoring.csv", row.names = FALSE)
+write.csv(mandf_data, file.path(private_derivatives_dir, "mandf_scoring.csv"), row.names = FALSE)
 
 ```
 
@@ -315,7 +348,7 @@ planfullness_data <- planfullness_data %>%
 planfullness_scoring <- planfullness_data %>%
   select(ResponseId, planfulness_mean)
 
-write.csv(planfullness_data, "../../derivatives/planfullness_scoring.csv", row.names = FALSE)
+write.csv(planfullness_data, file.path(private_derivatives_dir, "planfullness_scoring.csv"), row.names = FALSE)
 
 ```
 
@@ -340,7 +373,7 @@ sas_data <- sas_data %>%
 sas_scoring <- sas_data %>%
   select(ResponseId, sas_own, sas_total)
 
-write.csv(sas_data, "../../derivatives/sas_scoring.csv", row.names = FALSE)
+write.csv(sas_data, file.path(private_derivatives_dir, "sas_scoring.csv"), row.names = FALSE)
 
 ```
 
@@ -376,7 +409,7 @@ scaared_data <- scaared_data %>%
 scaared_scoring <- scaared_data %>%
   select(ResponseId, scared_total, scared_pa_so, scared_ga, scared_sep, scared_soc)
 
-write.csv(scaared_data, "../../derivatives/scaared_scoring.csv", row.names = FALSE)
+write.csv(scaared_data, file.path(private_derivatives_dir, "scaared_scoring.csv"), row.names = FALSE)
 
 ```
 
@@ -423,7 +456,7 @@ sogs_data <- sogs_data %>%
 sogs_scoring <- sogs_data %>%
   select(ResponseId, sogs_yn, sogs_total, sogs_classification)
 
-write.csv(sogs_data, "../../derivatives/sogs_scoring.csv", row.names = FALSE)
+write.csv(sogs_data, file.path(private_derivatives_dir, "sogs_scoring.csv"), row.names = FALSE)
 
 ```
 
@@ -455,7 +488,7 @@ spsrq_data <- spsrq_data %>%
 spsrq_scoring <- spsrq_data %>%
   select(ResponseId, spsrq_sr, spsrq_sp)
 
-write.csv(spsrq_data, "../../derivatives/spsrq_scoring.csv", row.names = FALSE)
+write.csv(spsrq_data, file.path(private_derivatives_dir, "spsrq_scoring.csv"), row.names = FALSE)
 
 ```
 
@@ -498,7 +531,7 @@ susd_data <- susd_data %>%
 susd_scoring <- susd_data %>%
   select(ResponseId, susd_depression, susd_mania)
 
-write.csv(susd_data, "../../derivatives/susd_scoring.csv", row.names = FALSE)
+write.csv(susd_data, file.path(private_derivatives_dir, "susd_scoring.csv"), row.names = FALSE)
 
 ```
 
@@ -519,7 +552,7 @@ uclal_data <- uclal_data %>%
 uclal_scoring <- uclal_data %>%
   select(ResponseId, uclal_total)
 
-write.csv(uclal_data, "../../derivatives/uclal_scoring.csv", row.names = FALSE)
+write.csv(uclal_data, file.path(private_derivatives_dir, "uclal_scoring.csv"), row.names = FALSE)
 
 ```
 
@@ -569,7 +602,7 @@ usidep_scoring <- usidep_data %>%
 # Create a frequency table
 class_counts <- table(usidep_data$usidep_classification)
 
-write.csv(usidep_data, "../../derivatives/usidep_scoring.csv", row.names = FALSE)
+write.csv(usidep_data, file.path(private_derivatives_dir, "usidep_scoring.csv"), row.names = FALSE)
 
 ```
 
@@ -600,7 +633,7 @@ pg_one_item = case_when(
 pg_scoring <- pg_data %>%
   select(ResponseId, pg_one_item)
 
-write.csv(pg_scoring, "../../derivatives/pg_scoring.csv", row.names = FALSE)
+write.csv(pg_scoring, file.path(private_derivatives_dir, "pg_scoring.csv"), row.names = FALSE)
 
 ```
 
@@ -616,13 +649,16 @@ merged_scoring <- Reduce(function(x, y) merge(x, y, by = "ResponseId", all = TRU
 # Exclude anyone from the dataset that had higher score on bbgs but nothing on sogs
 # merged_scoring <- merged_scoring[!(merged_scoring$bbgs_total > 3 & merged_scoring$sogs_classification == "No problems reported"), ]
 
-# Write the result to CSV
-write.csv(merged_scoring, "../../derivatives/scoring-mastersheet.csv", row.names = FALSE)
+# This is a private analytic output. It contains the Qualtrics ResponseId as an
+# internal join key and must never be treated as a public-release dataset.
+write.csv(
+  merged_scoring,
+  file.path(private_derivatives_dir, "scoring-mastersheet-SDOH.csv"),
+  row.names = FALSE
+)
 
 
 ```
-
-
 
 
 

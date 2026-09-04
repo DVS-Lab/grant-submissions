@@ -2,6 +2,10 @@
 
 This repository houses organized grant submission materials and code for the Smith Lab research projects.
 
+Participant-level source and analytic data are maintained in approved private
+storage and are not committed here. Project `sourcedata/README.md` files describe
+how private inputs are supplied to the preserved analysis code.
+
 ## Repository Structure
 
 The repository follows a standardized directory structure to maintain organization and consistency across all grant submissions:
@@ -76,6 +80,10 @@ Each submission contains three standardized folders:
   - Contains its own README with data descriptions and metadata
 
 ## Current Projects
+
+### 2025_R03-SDOH
+Public files are limited to code, documentation, and disclosure-reviewed
+aggregate outputs. See the project privacy protections and release guidance.
 
 ### 2025_R21-ABCD-IntExt
 **Environmental and Neural Drivers of Internalizing and Externalizing Behaviors in Adolescents**
