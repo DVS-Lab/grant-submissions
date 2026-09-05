@@ -79,3 +79,18 @@ rsconnect/
 # SDOH participant-level scoring outputs (aggregate CSVs remain allowed)
 2025_R03-SDOH/derivatives/*_scoring.csv
 2025_R03-SDOH/derivatives/scoring-mastersheet*.csv
+
+# SDOH: participant-level data are prohibited anywhere in this public project
+2025_R03-SDOH/**/*.csv
+2025_R03-SDOH/**/*.tsv
+2025_R03-SDOH/**/*.xlsx
+2025_R03-SDOH/**/*.xls
+2025_R03-SDOH/**/*.rds
+2025_R03-SDOH/**/*.RData
+2025_R03-SDOH/**/*.parquet
+2025_R03-SDOH/**/*.feather
+2025_R03-SDOH/**/*.sav
+2025_R03-SDOH/**/*.dta
+
+# Metadata-only dictionary is intentionally public
+!2025_R03-SDOH/docs/analytic-variable-dictionary.csv

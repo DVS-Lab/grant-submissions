@@ -1,23 +1,28 @@
 # SDOH data provenance
 
-The preserved code expects an access-controlled analytic source derived from the
-project's survey collection. That source remains outside this repository.
+Participant-level source and analytic data are maintained in access-controlled
+storage outside this public repository.
 
-The scoring workflow:
+The authoritative private analytic source is the reviewed, direct-identifier-free
+709-participant dataset. Public analysis code receives its path through
+`SDOH_SOURCE_DATA`.
 
-1. reads the path in `SDOH_SOURCE_DATA` while skipping the exact-DOB field;
-2. applies the existing attention-check passing value of `3` using the reviewed
-   column named in `SDOH_ATTENTION_CHECK_FIELD`;
-3. retains only an explicit demographic field list for analytic scoring;
-4. calculates instrument scores without changing the existing scoring rules;
-5. joins row-level scores using the private Qualtrics response key; and
-6. writes all row-level outputs to `SDOH_PRIVATE_DERIVATIVES_DIR`, an ignored
-   private location.
+The scoring workflow must:
 
-Exploratory analyses read the private scoring master from `SDOH_PRIVATE_MASTER`.
-Full ZIP/address data needed for GIS work should remain in the controlled source
-environment and should not flow into public derivatives.
+1. read only the reviewed private analytic source;
+2. require the project-specific `study_id` as the participant join key;
+3. reject Qualtrics `ResponseId`, exact date of birth, contact fields, vendor
+   identifiers, and other direct survey/platform identifiers;
+4. keep full current/childhood ZIP and address-level information within the
+   controlled GIS-linkage environment; and
+5. write row-level derivatives only to `SDOH_PRIVATE_DERIVATIVES_DIR`.
 
-The public repository currently contains code, documentation, aggregate figures,
-and a non-row-level analytic variable dictionary only. It does not contain an
-approved public participant dataset.
+Exploratory analyses read private analysis-ready derivatives through explicitly
+configured private paths such as `SDOH_PRIVATE_MASTER`.
+
+The public repository contains code, documentation, aggregate figures, and a
+metadata-only analytic variable dictionary. It does not contain an approved
+public participant dataset.
+
+Any future public participant dataset requires a separate disclosure-risk review
+as described in `public-data-release.md`.

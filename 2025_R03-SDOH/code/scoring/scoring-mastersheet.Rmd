@@ -15,6 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(dplyr)
 library(conflicted)
+library(readxl)
 
 conflict_prefer("select", "dplyr")
 
@@ -23,11 +24,12 @@ conflict_prefer("select", "dplyr")
 
 ```{r}
 
-# Load the private input without importing exact DOB. The source and all row-level
-# outputs must remain outside Git; see sourcedata/README.md.
+# Load the reviewed private analytic source. Direct identifiers must already
+# have been removed upstream; this public code must never ingest a raw survey
+# export.
 source_path <- Sys.getenv("SDOH_SOURCE_DATA")
 if (!nzchar(source_path)) {
-  stop("Set SDOH_SOURCE_DATA to the private local analytic source.")
+  stop("Set SDOH_SOURCE_DATA to the reviewed private analytic source.")
 }
 
 private_derivatives_dir <- Sys.getenv(
@@ -36,18 +38,73 @@ private_derivatives_dir <- Sys.getenv(
 )
 dir.create(private_derivatives_dir, recursive = TRUE, showWarnings = FALSE)
 
-data <- read.csv(
-  source_path,
-  colClasses = c(demo_dob = "NULL"),
-  check.names = FALSE
+source_ext <- tolower(tools::file_ext(source_path))
+
+data <- switch(
+  source_ext,
+  xlsx = readxl::read_excel(source_path),
+  xls  = readxl::read_excel(source_path),
+  csv  = read.csv(source_path, check.names = FALSE),
+  stop("SDOH_SOURCE_DATA must be an .xlsx, .xls, or .csv analytic file.")
 )
+
+data <- as.data.frame(data)
+
+if (!"study_id" %in% names(data)) {
+  stop("The analytic source must contain project-specific study_id.")
+}
+
+prohibited_fields <- c(
+  "ResponseId",
+  "demo_dob",
+  "email_capture",
+  "StartDate",
+  "EndDate",
+  "RecordedDate",
+  "IPAddress",
+  "RecipientEmail",
+  "RecipientFirstName",
+  "RecipientLastName",
+  "ExternalReference",
+  "QPMID",
+  "survey_id",
+  "transaction_id",
+  "SVID",
+  "cintid",
+  "RISN",
+  "rid"
+)
+
+found_prohibited <- names(data)[
+  tolower(names(data)) %in% tolower(prohibited_fields)
+]
+
+if (length(found_prohibited) > 0) {
+  stop(
+    paste(
+      "Prohibited identifier/platform fields found:",
+      paste(found_prohibited, collapse = ", ")
+    )
+  )
+}
+
+data$study_id <- as.character(data$study_id)
+
+if (any(is.na(data$study_id)) ||
+    any(!nzchar(trimws(data$study_id)))) {
+  stop("study_id must be present and nonblank for every participant.")
+}
+
+if (anyDuplicated(data$study_id)) {
+  stop("study_id must uniquely identify participant rows.")
+}
 
 ```
 
 ```{r}
 
-# Remove row of labels to help with the index
-data = data[-c(1), ] 
+# The reviewed analytic workbook already contains participant rows only.
+# Do not delete the first row.
 
 ```
 
@@ -84,7 +141,7 @@ demographic_fields <- c(
 )
 
 demo_scoring <- data %>%
-  select(ResponseId, all_of(demographic_fields))
+  select(study_id, all_of(demographic_fields))
 
 ```
 
@@ -94,7 +151,7 @@ demo_scoring <- data %>%
 
 # Select relevant columns
 ses_scoring <- data %>%
-  select(ResponseId, starts_with("ses_"))
+  select(study_id, starts_with("ses_"))
 
 ```
 
@@ -102,7 +159,7 @@ ses_scoring <- data %>%
 
 # Select relevant columns
 bbgs_data <- data %>%
-  select(ResponseId, starts_with("bbgs"))
+  select(study_id, starts_with("bbgs"))
 
 bbgs_cols <- grep("^bbgs_", names(bbgs_data), value = TRUE)
 bbgs_data[bbgs_cols] <- lapply(bbgs_data[bbgs_cols], function(x) as.numeric(x) - 0)
@@ -125,7 +182,7 @@ library(dplyr)
 
 # Select relevant columns
 bbgs_scoring <- bbgs_data %>%
-  select(ResponseId, bbgs_total, prob_gam, prob_gam_two, bbgs_cols)
+  select(study_id, bbgs_total, prob_gam, prob_gam_two, bbgs_cols)
 
 write.csv(bbgs_scoring, file.path(private_derivatives_dir, "bbgs_scoring.csv"), row.names = FALSE)
 
@@ -135,7 +192,7 @@ write.csv(bbgs_scoring, file.path(private_derivatives_dir, "bbgs_scoring.csv"), 
 
 # Select relevant columns
 bisbas_data <- data %>%
-  select(ResponseId, starts_with("bisbas_matrix_"))
+  select(study_id, starts_with("bisbas_matrix_"))
 
 # Get the original BISBAS item columns
 q_cols <- grep("^bisbas_matrix_", names(bisbas_data), value = TRUE)
@@ -189,7 +246,7 @@ write.csv(bisbas_scoring, file.path(private_derivatives_dir, "bisbas_scoring.csv
 
 # Select relevant columns
 dospert_data <- data %>%
-  select(ResponseId, starts_with("dospert"))
+  select(study_id, starts_with("dospert"))
 
 # Convert all dospert items to numeric and adjust scale
 # Responses were coded in Qualtrics as 1,2,3 but need to be 0,1,2
@@ -220,7 +277,7 @@ dospert_data <- dospert_data %>%
 
 # Select relevant columns
 dospert_scoring <- dospert_data %>%
-  select(ResponseId, dospert_ethic, dospert_financial, dospert_hs, dospert_rec, dospert_inv, dospert_gam, dospert_soc)
+  select(study_id, dospert_ethic, dospert_financial, dospert_hs, dospert_rec, dospert_inv, dospert_gam, dospert_soc)
 
 write.csv(dospert_scoring, file.path(private_derivatives_dir, "dospert_scoring.csv"), row.names = FALSE)
 
@@ -230,7 +287,7 @@ write.csv(dospert_scoring, file.path(private_derivatives_dir, "dospert_scoring.c
 
 # Select relevant columns
 fevs_data <- data %>%
-  select(ResponseId, starts_with("fevs"))
+  select(study_id, starts_with("fevs"))
 
 # Convert all SCAARED items to numeric and adjust scale
 # Responses were coded in Qualtrics as 1,2,3 but need to be 0,1,2
@@ -244,7 +301,7 @@ fevs_data <- fevs_data %>%
 
 # Select relevant columns
 fevs_scoring <- fevs_data %>%
-  select(ResponseId, fevs_total)
+  select(study_id, fevs_total)
 
 write.csv(fevs_data, file.path(private_derivatives_dir, "fevs_scoring.csv"), row.names = FALSE)
 
@@ -254,7 +311,7 @@ write.csv(fevs_data, file.path(private_derivatives_dir, "fevs_scoring.csv"), row
 
 # Select relevant columns
 gsas_data <- data %>%
-  select(ResponseId, starts_with("gsas"))
+  select(study_id, starts_with("gsas"))
 
 gsas_cols <- grep("^gsas_", names(gsas_data), value = TRUE)
 gsas_data[gsas_cols] <- lapply(gsas_data[gsas_cols], function(x) as.numeric(x) - 1)
@@ -282,7 +339,7 @@ gsas_data <- gsas_data %>%
 
 # Select relevant columns
 gsas_scoring <- gsas_data %>%
-  select(ResponseId, gsas_total, gsas_urge, gsas_thought)
+  select(study_id, gsas_total, gsas_urge, gsas_thought)
 
 write.csv(gsas_data, file.path(private_derivatives_dir, "gsas_scoring.csv"), row.names = FALSE)
 
@@ -292,7 +349,7 @@ write.csv(gsas_data, file.path(private_derivatives_dir, "gsas_scoring.csv"), row
 
 # Select relevant columns
 mandf_data <- data %>%
-  select(ResponseId, starts_with("mandf"))
+  select(study_id, starts_with("mandf"))
 
 # Convert all SCAARED items to numeric and adjust scale
 # Responses were coded in Qualtrics as 1,2,3 but need to be 0,1,2
@@ -301,7 +358,7 @@ mandf_data[mandf_cols] <- lapply(mandf_data[mandf_cols], function(x) as.numeric(
 
 # Select relevant columns
 mandf_scoring <- mandf_data %>%
-  select(ResponseId, starts_with("mandf"))
+  select(study_id, starts_with("mandf"))
 
 write.csv(mandf_data, file.path(private_derivatives_dir, "mandf_scoring.csv"), row.names = FALSE)
 
@@ -311,7 +368,7 @@ write.csv(mandf_data, file.path(private_derivatives_dir, "mandf_scoring.csv"), r
 
 # Select relevant columns
 planfullness_data <- data %>%
-  select(ResponseId, starts_with("Q341_")) %>%
+  select(study_id, starts_with("Q341_")) %>%
   select(-Q341_24)  # Remove attention check
 
 # Get just the Q341_ columns
@@ -346,7 +403,7 @@ planfullness_data <- planfullness_data %>%
 
 # Select relevant columns
 planfullness_scoring <- planfullness_data %>%
-  select(ResponseId, planfulness_mean)
+  select(study_id, planfulness_mean)
 
 write.csv(planfullness_data, file.path(private_derivatives_dir, "planfullness_scoring.csv"), row.names = FALSE)
 
@@ -356,7 +413,7 @@ write.csv(planfullness_data, file.path(private_derivatives_dir, "planfullness_sc
 
 # Select relevant columns
 sas_data <- data %>%
-  select(ResponseId, sas_own, starts_with("sas_matrix_"))
+  select(study_id, sas_own, starts_with("sas_matrix_"))
 
 # Optional: convert all remaining items to numeric just to be safe
 for (i in 1:10) {
@@ -371,7 +428,7 @@ sas_data <- sas_data %>%
 
 # Select relevant columns
 sas_scoring <- sas_data %>%
-  select(ResponseId, sas_own, sas_total)
+  select(study_id, sas_own, sas_total)
 
 write.csv(sas_data, file.path(private_derivatives_dir, "sas_scoring.csv"), row.names = FALSE)
 
@@ -381,7 +438,7 @@ write.csv(sas_data, file.path(private_derivatives_dir, "sas_scoring.csv"), row.n
 
 # Select relevant columns
 scaared_data <- data %>%
-  select(ResponseId, starts_with("scared_a"))
+  select(study_id, starts_with("scared_a"))
 
 # Convert all SCAARED items to numeric and adjust scale
 # Responses were coded in Qualtrics as 1,2,3 but need to be 0,1,2
@@ -407,7 +464,7 @@ scaared_data <- scaared_data %>%
 
 # Select relevant columns
 scaared_scoring <- scaared_data %>%
-  select(ResponseId, scared_total, scared_pa_so, scared_ga, scared_sep, scared_soc)
+  select(study_id, scared_total, scared_pa_so, scared_ga, scared_sep, scared_soc)
 
 write.csv(scaared_data, file.path(private_derivatives_dir, "scaared_scoring.csv"), row.names = FALSE)
 
@@ -429,7 +486,7 @@ sogs_cols <- c(sogs_15, sogs_16_17, sogs_18_22, sogs_24_26, sogs_28_35)
 
 # Select and convert to numeric
 sogs_data <- data %>%
-  select(ResponseId, sogs_yn, all_of(sogs_cols)) %>%
+  select(study_id, sogs_yn, all_of(sogs_cols)) %>%
   mutate(across(all_of(sogs_cols), as.numeric))
 
 # Scoring logic
@@ -454,7 +511,7 @@ sogs_data <- sogs_data %>%
 
 # Final output
 sogs_scoring <- sogs_data %>%
-  select(ResponseId, sogs_yn, sogs_total, sogs_classification)
+  select(study_id, sogs_yn, sogs_total, sogs_classification)
 
 write.csv(sogs_data, file.path(private_derivatives_dir, "sogs_scoring.csv"), row.names = FALSE)
 
@@ -464,7 +521,7 @@ write.csv(sogs_data, file.path(private_derivatives_dir, "sogs_scoring.csv"), row
 
 # Select relevant columns
 spsrq_data <- data %>%
-  select(ResponseId, starts_with("spsrq_matrix_"))
+  select(study_id, starts_with("spsrq_matrix_"))
 
 # Optional: convert all remaining items to numeric just to be safe
 for (i in 1:20) {
@@ -486,7 +543,7 @@ spsrq_data <- spsrq_data %>%
 
 # Select relevant columns
 spsrq_scoring <- spsrq_data %>%
-  select(ResponseId, spsrq_sr, spsrq_sp)
+  select(study_id, spsrq_sr, spsrq_sp)
 
 write.csv(spsrq_data, file.path(private_derivatives_dir, "spsrq_scoring.csv"), row.names = FALSE)
 
@@ -496,7 +553,7 @@ write.csv(spsrq_data, file.path(private_derivatives_dir, "spsrq_scoring.csv"), r
 
 # Select relevant columns
 susd_data <- data %>%
-  select(ResponseId, starts_with("susd_matrix_"))
+  select(study_id, starts_with("susd_matrix_"))
 
 # Get just the Q341_ columns
 q_cols <- grep("^susd_matrix_", names(susd_data), value = TRUE)
@@ -529,7 +586,7 @@ susd_data <- susd_data %>%
 
 # Select relevant columns
 susd_scoring <- susd_data %>%
-  select(ResponseId, susd_depression, susd_mania)
+  select(study_id, susd_depression, susd_mania)
 
 write.csv(susd_data, file.path(private_derivatives_dir, "susd_scoring.csv"), row.names = FALSE)
 
@@ -539,7 +596,7 @@ write.csv(susd_data, file.path(private_derivatives_dir, "susd_scoring.csv"), row
 
 # Select relevant columns
 uclal_data <- data %>%
-  select(ResponseId, starts_with("uclal"))
+  select(study_id, starts_with("uclal"))
 
 # Convert selected columns to numeric
 uclal_data[c("uclal_1", "uclal_2", "uclal_3")] <- lapply(uclal_data[c("uclal_1", "uclal_2", "uclal_3")], as.numeric)
@@ -550,7 +607,7 @@ uclal_data <- uclal_data %>%
 
 # Select relevant columns
 uclal_scoring <- uclal_data %>%
-  select(ResponseId, uclal_total)
+  select(study_id, uclal_total)
 
 write.csv(uclal_data, file.path(private_derivatives_dir, "uclal_scoring.csv"), row.names = FALSE)
 
@@ -560,7 +617,7 @@ write.csv(uclal_data, file.path(private_derivatives_dir, "uclal_scoring.csv"), r
 
 # Select relevant columns
 usidep_data <- data %>%
-  select(ResponseId, starts_with("usidep_"))
+  select(study_id, starts_with("usidep_"))
 
 # Get just the Q341_ columns
 q_cols <- grep("^usidep_", names(usidep_data), value = TRUE)
@@ -597,7 +654,7 @@ usidep_data <- usidep_data %>%
 
 # Select relevant columns
 usidep_scoring <- usidep_data %>%
-  select(ResponseId, usidep_total, usidep_classification)
+  select(study_id, usidep_total, usidep_classification)
 
 # Create a frequency table
 class_counts <- table(usidep_data$usidep_classification)
@@ -619,9 +676,9 @@ library(dplyr)
   # current (high cutoff for BBGS and SOGS)
 
 pg_data <- bbgs_scoring %>%
-  inner_join(sogs_scoring, by = "ResponseId") %>%
-  inner_join(mandf_scoring, by = "ResponseId") %>%
-  inner_join(gsas_scoring, by = "ResponseId") %>%
+  inner_join(sogs_scoring, by = "study_id") %>%
+  inner_join(mandf_scoring, by = "study_id") %>%
+  inner_join(gsas_scoring, by = "study_id") %>%
   mutate(
 pg_one_item = case_when(
   bbgs_total < 4 ~ "non-PG",
@@ -631,7 +688,7 @@ pg_one_item = case_when(
 )
 
 pg_scoring <- pg_data %>%
-  select(ResponseId, pg_one_item)
+  select(study_id, pg_one_item)
 
 write.csv(pg_scoring, file.path(private_derivatives_dir, "pg_scoring.csv"), row.names = FALSE)
 
@@ -643,14 +700,14 @@ write.csv(pg_scoring, file.path(private_derivatives_dir, "pg_scoring.csv"), row.
 # Dynamically get all *_scoring data frames from the global environment
 scoring_dfs <- mget(ls(pattern = "_scoring$", envir = .GlobalEnv), envir = .GlobalEnv)
 
-# Merge all by "ResponseId"
-merged_scoring <- Reduce(function(x, y) merge(x, y, by = "ResponseId", all = TRUE), scoring_dfs)
+# Merge all by "study_id"
+merged_scoring <- Reduce(function(x, y) merge(x, y, by = "study_id", all = TRUE), scoring_dfs)
 
 # Exclude anyone from the dataset that had higher score on bbgs but nothing on sogs
 # merged_scoring <- merged_scoring[!(merged_scoring$bbgs_total > 3 & merged_scoring$sogs_classification == "No problems reported"), ]
 
-# This is a private analytic output. It contains the Qualtrics ResponseId as an
-# internal join key and must never be treated as a public-release dataset.
+# This is a private row-level analytic output and must never be treated as a
+# public-release dataset.
 write.csv(
   merged_scoring,
   file.path(private_derivatives_dir, "scoring-mastersheet-SDOH.csv"),

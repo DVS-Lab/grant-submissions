@@ -82,8 +82,9 @@ Each submission contains three standardized folders:
 ## Current Projects
 
 ### 2025_R03-SDOH
-Public files are limited to code, documentation, and disclosure-reviewed
-aggregate outputs. See the project privacy protections and release guidance.
+Public files are limited to code, documentation, and aggregate outputs reviewed
+for absence of participant identifiers. See the project privacy protections and
+release guidance.
 
 ### 2025_R21-ABCD-IntExt
 **Environmental and Neural Drivers of Internalizing and Externalizing Behaviors in Adolescents**
