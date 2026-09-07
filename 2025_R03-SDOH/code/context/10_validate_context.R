@@ -24,7 +24,7 @@ validation <- do.call(rbind, list(
   describe("socialcap_high_ses_exposure", "Opportunity Insights Social Capital Atlas", "2022 release", "ZIP", "nonnegative"),
   describe("gini_zcta", "ACS 2024 five-year B19083", "2024", "ZCTA", "0–1"),
   describe("ruca_primary", "USDA ERS RUCA", "2020 codes", "ZIP", "integer 1–10"),
-  describe("env_burden_simple", "Project exploratory composite", "current pipeline", "participant current ZIP/ZCTA", "mean of >=3 aligned z scores")
+  describe("env_burden_simple", "Project exploratory composite", "current pipeline", "mixed direct-ZIP and ZCTA-linked components", "mean of >=3 aligned z scores")
 ))
 if (any(context$sdi_zcta < 0 | context$sdi_zcta > 100, na.rm = TRUE)) stop("SDI outside 0–100.")
 if (any(context$pm25_2012_2022_zcta <= 0 | context$pm25_2012_2022_zcta > 40, na.rm = TRUE)) stop("PM2.5 outside the documented plausibility range.")

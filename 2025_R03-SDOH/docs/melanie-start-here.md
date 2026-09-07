@@ -6,6 +6,8 @@ Most foundational work is complete in a reproducible N=709 working pipeline. The
 
 - Start in a fresh clone with only `private-data/QualtricsData_SDOH_DEIDENTIFIED.xlsx` and run `bash 2025_R03-SDOH/scripts/run-private-pipeline.sh`.
 - Confirm `private-data/derived/reproduction-check.md` reports PASS, then preserve `run-provenance.json` for comparison.
+- Confirm Social Capital Atlas coverage reflects direct participant-current-ZIP
+  matching with no ZCTA fallback; SDI, Gini, and PM2.5 remain ZCTA-linked.
 - Complete every applicable item in [`independent-validation-checklist.md`](independent-validation-checklist.md), including score maps, fixed context sources, expected Ns, and selected headline models.
 - Document discrepancies with the Git SHA, provenance, expected/actual check, and error text—never participant values or geography.
 

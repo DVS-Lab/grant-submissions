@@ -14,8 +14,9 @@ The current one-command pipeline:
 2. require the project-specific `study_id` as the participant join key;
 3. reject Qualtrics `ResponseId`, exact date of birth, contact fields, vendor
    identifiers, and other direct survey/platform identifiers;
-4. keep current/childhood ZIP and intermediate ZCTA linkage inside the
-   controlled private GIS-linkage environment;
+4. keep direct current-ZIP linkage for ZIP-native Social Capital Atlas/RUCA and
+   current/childhood ZIP-to-ZCTA linkage for SDI/Gini/PM2.5 inside the controlled
+   private GIS-linkage environment;
 5. download only fixed, checksummed national public context sources from
    `config/reproducibility-sources.json`, never sending a
    participant-derived ZIP/ZCTA list to a remote service; and

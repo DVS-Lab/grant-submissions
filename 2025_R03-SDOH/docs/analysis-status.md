@@ -16,10 +16,13 @@
   ordinal band and binary any-loss indicator.
 - Blank, whitespace-only, `NA`, and `N/A` strings are missing before factors or
   models are built.
-- The current-ZIP backbone links reproducibly to 2022 UDS ZCTA, Robert Graham
-  Center SDI, 2012–2022 ACAG PM2.5, Opportunity Insights Social Capital Atlas,
-  ACS 2024 five-year B19083 Gini, and USDA 2020 RUCA. ZIP/ZCTA are excluded from
-  the 709-row private analysis master.
+- Opportunity Insights Social Capital Atlas and USDA 2020 RUCA are linked by
+  direct normalized current-ZIP match. Direct Social Capital coverage is 668
+  for economic connectedness and 663 for high-SES exposure. The 2022 UDS
+  crosswalk supplies ZCTA only for Robert Graham Center SDI, 2012–2022 ACAG
+  PM2.5 aggregation, and ACS 2024
+  five-year B19083 Gini. ZIP/ZCTA are excluded from the 709-row private analysis
+  master.
 - Exposures retain raw and standardized forms; a secondary equal-weight burden
   composite requires at least three of four fixed, documented adversity domains.
 - The private exposure-correlation audit flags |r| ≥ .70 and ≥ .85.

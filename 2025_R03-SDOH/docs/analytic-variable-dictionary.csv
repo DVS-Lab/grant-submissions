@@ -5,7 +5,7 @@ demo_sab,Sex,What is your sex assigned at birth? ,"[1, Male; 2, Female; 3, Othe
 demo_race,Race,What is your race?,"[1, American-Indian / Alaskan Native; 2, Asian; 3, Native Hawaiian or Pacific Islander; 4, Black or African American; 5, White; 6, Two or more races, or race not described (Other); 7, Prefer not to respond]"
 demo_eth,Ethnicity,What is your ethnicity? ,"[1, Hispanic or Latino; 2, Not Hispanic or Latino; 3, Ethnicity not described (Other)]"
 demo_state,FIPS State,In which state is your current primary residence?,
-demo_zip_prim_yr,ZIP Code years of residence,How long have you lived in this zip code? ,"[1, Less than one year; 2, 1-5 years; 3, 6-10 years; 4, More than 10 years]"
+demo_zip_prim_yr,Duration of residence at current location,How long have you lived in this zip code? ,"[1, Less than one year; 2, 1-5 years; 3, 6-10 years; 4, More than 10 years]"
 demo_quota,Residence geographic type,How would you describe the area in which you live? ,"[1, Urban; 2, Suburban; 3, Rural]"
 demo_state_ch,Childhood FIPS State,In which state did you spend most of your childhood (0-18 years)?,
 ses_edu,Level of Education,What is the highest level of education you have completed? ,"[1, Less than highschool; 2, High School; 3, Trade qualification or certification (e.g., carpentry, hairdressing); 4, GED; 5, Some university; 6,Bachelor Degree; 7, Postgraduate Degree]"

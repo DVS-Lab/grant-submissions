@@ -19,7 +19,8 @@ No raw export, ResponseId crosswalk, pre-existing cache, or manually prepared
 environment is required. The command bootstraps isolated dependencies; validates
 the source and privacy boundary; completes weighted
 OAFEM, PROMIS-29 v2.0, CTB, fraud, and other core scoring; downloads and links
-public ZIP/ZCTA context sources; builds a geography-free private analysis
+public context sources using direct ZIP linkage or ZCTA linkage as appropriate;
+builds a geography-free private analysis
 master; runs 216 fixed grant specifications and 11 draft figures; creates the
 private Melanie review packet; verifies the public reproduction contract; writes
 private run provenance; and runs the public-file privacy guard. Open

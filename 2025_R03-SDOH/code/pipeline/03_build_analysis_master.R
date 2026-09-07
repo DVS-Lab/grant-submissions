@@ -32,10 +32,12 @@ if (file.exists(context_path)) {
   master <- master[match(d$study_id, master$study_id), , drop = FALSE]
 }
 
-# Historical aggregate model-screen compatibility. Old coefficient labels prove
-# geo_f was an Urban/Suburban/Rural factor; minority's old coding is not known
-# and is deliberately not reconstructed. The old OAFEM alias now points to the
-# correctly severity-weighted outcome for the requested descriptive rerun.
+# Historical aggregate coefficient labels include Suburban and Rural levels,
+# consistent with the current survey Urban/Suburban/Rural field. Exact original
+# geo_f construction is not recoverable, so this is an explicit compatibility
+# reconstruction from demo_quota. Minority's old coding is also unknown and is
+# deliberately not reconstructed. The old OAFEM alias now points to the correctly
+# severity-weighted outcome for the requested descriptive rerun.
 master$geo_f <- factor(master$demo_quota, levels = c("Urban", "Suburban", "Rural"))
 master$oafem_adult_total <- master$oafem_weighted_total
 

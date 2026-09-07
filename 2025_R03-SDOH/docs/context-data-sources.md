@@ -43,7 +43,9 @@ an operational local cache inventory.
 - Download: <https://data.humdata.org/dataset/85ee8e10-0c66-4635-b997-79b6fad44c71/resource/ab878625-279b-4bef-a2b3-c132168d536e/download/social_capital_zip.csv>
 - Variables: economic connectedness, high-SES exposure, friending bias,
   clustering, support ratio, volunteering rate, and civic organizations.
-- Geography: direct five-digit ZIP match.
+- Geography: Social Capital source ZIP matched directly to normalized
+  participant current ZIP. The primary variables do not use the ZIP-to-ZCTA
+  crosswalk and do not substitute a ZCTA value when the direct ZIP is unmatched.
 
 ## Income inequality
 
@@ -62,6 +64,8 @@ an operational local cache inventory.
 - Download: <https://www.ers.usda.gov/media/5444/2020-rural-urban-commuting-area-codes-zip-codes.csv?v=49164>
 - The project retains the primary 1–10 code and groups 1–3 as metropolitan,
   4–6 micropolitan, 7–9 small town, and 10 rural.
+- Geography: direct source-ZIP to participant-current-ZIP match, independent of
+  the ZIP-to-ZCTA crosswalk.
 
 ## Sources deliberately not linked
 

@@ -5,8 +5,10 @@ sc <- utils::read.csv(path, colClasses = "character", check.names = FALSE)
 vars <- c("zip", "ec_zip", "exposure_grp_mem_zip", "bias_grp_mem_zip", "clustering_zip",
           "support_ratio_zip", "volunteering_rate_zip", "civic_organizations_zip")
 require_columns(sc, vars, "Social Capital Atlas ZIP file")
-sc$zcta <- normalize_zip(sc$zip)
-hit <- sc[match(link$zcta_current, sc$zcta), vars[-1], drop = FALSE]
+require_columns(link, c("study_id", "zip_current"), "private ZIP linkage")
+sc$zip <- normalize_zip(sc$zip)
+current_zip <- normalize_zip(link$zip_current)
+hit <- sc[match(current_zip, sc$zip), vars[-1], drop = FALSE]
 hit <- numeric_columns(hit, names(hit))
 out <- data.frame(
   study_id = link$study_id,
@@ -22,4 +24,4 @@ out <- data.frame(
   check.names = FALSE
 )
 write_context_csv(out, "context-social-capital.csv")
-message("Linked Social Capital Atlas ZIP/ZCTA measures.")
+message("Linked Social Capital Atlas measures by direct current ZIP.")

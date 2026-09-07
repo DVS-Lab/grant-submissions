@@ -14,8 +14,9 @@ scripts in order:
 
 1. `01_validate_source.R` — schema, key, structure, and privacy checks;
 2. `02_score_core_measures.R` — justified item recoding and core scores;
-3. `code/context/00`–`10` — public-source preparation, ZIP/ZCTA linkage,
-   SDI, Social Capital Atlas, ACS Gini, PM2.5, RUCA, source audit, context
+3. `code/context/00`–`10` — public-source preparation, direct current-ZIP
+   linkage for Social Capital Atlas/RUCA, ZIP-to-ZCTA linkage for SDI/Gini/PM2.5,
+   source audit, context
    master, exposure correlations, and validation;
 4. `03_build_analysis_master.R` — one private analysis-ready master without ZIP;
 5. `04_validate_scores.R` — score ranges, coverage, and scoring-integrity checks;

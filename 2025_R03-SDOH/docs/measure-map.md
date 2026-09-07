@@ -11,7 +11,7 @@ been approved.
 | Construct | Raw variables / items present | Existing source score | Current pipeline output | Status | Current relevance and notes |
 |---|---:|---:|---|---|---|
 | FEVS short form | `fevs_1`–`fevs_9` (9) | None | `fevs_total`, 0–18 | **Verified** | CORE. Item-specific three-level risk mappings; complete-case sum. The legacy script accidentally summed only items 2–9 because of positional indexing and is not reused. |
-| OAFEM | `oafem_adult_1`–`oafem_adult_30` (30) | None | `oafem_weighted_total`; `oafem_items_rated`; unweighted diagnostic | **Verified** | CORE. All exact stems map uniquely in `oafem-item-map.csv`; No/Suspected/Yes = 0/1/2 and explicit severity weights = 1/2/3. The sum uses rated items and is missing only when zero items are rated. |
+| OAFEM | `oafem_adult_1`–`oafem_adult_30` (30) | None | `oafem_weighted_total`; `oafem_items_rated`; unweighted diagnostic | **Verified** | CORE. All exact stems map uniquely in `oafem-item-map.csv`; No/Suspected/Yes = 0/1/2 and explicit severity weights = 1/2/3. The weighted sum uses rated items and is missing only when zero items are rated. Because participants can have different numbers rated, retain `oafem_items_rated` for independent sensitivity review. |
 | Everyday Cognition (eCog-12) | `ecog_1`–`ecog_12` (12) | None | `ecog_total`; `ecog_items_answered` | **Verified** | CORE. Responses 1–4; mean of answered items, matching the published mean-of-completed-items rule. |
 | 7 Up 7 Down / SUSD | `susd_matrix_1`–`susd_matrix_14` (14) | None | `susd_depression`, `susd_mania` | **Verified** | CORE. Seven items per subscale, 0–3, complete-case sums. The item sets match legacy code; misleading copied comments/renumbering are not reused. |
 | UCLA 3-item loneliness | `uclal_1`–`uclal_3` (3) | None | `uclal_total`, 3–9 | **Verified** | CORE. A source typo, “Hardly Every,” is normalized to “Hardly Ever”; complete-case sum. Legacy `na.rm=TRUE` behavior is not retained. |
@@ -25,7 +25,7 @@ been approved.
 | Education | `ses_edu`, `ses_yoe` | None | unchanged private fields | **Checked fields** | CORE SES. |
 | Household/personal income | `ses_thi`, `ses_tpi` | None | unchanged private categorical fields | **Checked fields** | CORE SES. |
 | Home ownership / household resources | `ses_rentown`, `ses_hhr` | None | unchanged private fields | **Checked fields** | CORE SES. |
-| Urban/suburban/rural | `demo_quota` | None | unchanged private category | **Checked survey field** | CORE/POSSIBLY RELEVANT. This is not a reproduced geographic rurality lookup. |
+| Urban/suburban/rural | `demo_quota` | None | unchanged private survey category | **Checked survey field** | CORE/POSSIBLY RELEVANT. This is the survey Urban/Suburban/Rural classification/quota, distinct from broad `region` and GIS-derived RUCA. |
 | Current ZIP | `demo_zip_prim` | None | excluded | **Private linkage input** | CORE linkage priority; never written to the general analysis master. |
 | Childhood ZIP | `demo_zip_child` | None | excluded | **Private linkage input** | Secondary linkage input. |
 | Residence duration | `demo_zip_prim_yr` | None | unchanged private field | **Checked field** | CORE/POSSIBLY RELEVANT. Despite its name, this is duration rather than ZIP. |
@@ -48,13 +48,16 @@ been approved.
 ## Geographic/context variables
 
 The source workbook contains no derived context. The private pipeline now links
-current ZIP reproducibly to SDI, ACAG PM2.5, Opportunity Insights Social
-Capital Atlas, ACS B19083 Gini, and USDA RUCA, then removes ZIP/ZCTA before the
-analysis master is written. Historical aliases `ec_zip`,
+current ZIP directly to ZIP-native Opportunity Insights Social Capital Atlas
+and USDA RUCA. It separately crosswalks current ZIP to ZCTA for SDI, ACAG
+PM2.5, and ACS B19083 Gini, then removes ZIP/ZCTA before the analysis master is
+written. Historical aliases `ec_zip`,
 `exposure_grp_mem_zip`, `gini`, and the supported `geo_f` survey-category
-compatibility factor are private only. See `context-exposure-map.md` for exact
-provenance. ADI and crime remain deliberately unavailable for documented
-geographic/access reasons rather than being approximated silently.
+compatibility reconstruction from `demo_quota` are private only. Historical
+coefficient labels are consistent with, but do not prove, this reconstruction.
+See `context-exposure-map.md` for exact provenance. ADI and crime remain
+deliberately unavailable for documented geographic/access reasons rather than
+being approximated silently.
 
 ## Scoring references
 

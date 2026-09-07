@@ -19,8 +19,8 @@
   "exposures": {
     "sdi_zcta": 706,
     "pm25_2012_2022_zcta": 700,
-    "socialcap_economic_connectedness": 671,
-    "socialcap_high_ses_exposure": 666,
+    "socialcap_economic_connectedness": 668,
+    "socialcap_high_ses_exposure": 663,
     "gini_zcta": 705,
     "ruca_primary": 706,
     "env_burden_simple": 704

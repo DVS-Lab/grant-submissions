@@ -97,6 +97,40 @@ def main() -> int:
     require(set(dictionary[0]) == required_dictionary_columns, "Analysis dictionary schema changed")
     require(len(dictionary) == 91 and len({row["variable"] for row in dictionary}) == 91,
             "Analysis dictionary must contain 91 unique variables")
+    dictionary_by_variable = {row["variable"]: row for row in dictionary}
+
+    duration = dictionary_by_variable["demo_zip_prim_yr"]
+    duration_text = " ".join(duration.values()).lower()
+    require("zip code" not in duration_text and "five-digit zip" not in duration_text,
+            "demo_zip_prim_yr must be documented as residence duration, not a ZIP code")
+
+    geo = dictionary_by_variable["geo_f"]
+    geo_text = f'{geo["source"]} {geo["calculation"]}'.lower()
+    require("demo_quota" in geo_text and all(level in geo_text for level in ("urban", "suburban", "rural")),
+            "geo_f must document its demo_quota-based Urban/Suburban/Rural reconstruction")
+
+    oafem_missingness = dictionary_by_variable["oafem_weighted_total"]["missing_data_rule"].lower()
+    require("requires all 30" not in oafem_missingness and "no items" in oafem_missingness,
+            "Weighted OAFEM missingness must reflect available-item scoring")
+    oafem_unweighted = dictionary_by_variable["oafem_unweighted_complete"]
+    require(oafem_unweighted["scale_units"] == "0-60" and
+            "0/1/2" in oafem_unweighted["calculation"],
+            "Unweighted OAFEM diagnostic must be documented as a complete 0/1/2 sum")
+
+    quota_text = " ".join(dictionary_by_variable["demo_quota"].values()).lower()
+    require(all(level in quota_text for level in ("urban", "suburban", "rural")),
+            "demo_quota must document the Urban/Suburban/Rural survey categories")
+
+    social_linkage = (project / "code/context/03_link_social_capital.R").read_text(encoding="utf-8")
+    require("normalize_zip(link$zip_current)" in social_linkage and
+            "match(current_zip, sc$zip)" in social_linkage and
+            "zcta_current" not in social_linkage,
+            "Social Capital linkage must use direct normalized current ZIP without ZCTA fallback")
+    for relative in ("docs/context-exposure-map.md", "docs/context-data-sources.md"):
+        linkage_doc = (project / relative).read_text(encoding="utf-8").lower().replace("-", " ")
+        require("direct" in linkage_doc and "current zip" in linkage_doc and
+                ("no zcta fallback" in linkage_doc or "do not substitute" in linkage_doc),
+                f"{relative} must document direct current-ZIP Social Capital linkage without fallback")
 
     print("Public SDOH scoring/source/schema contract tests passed (no participant data used).")
     return 0
