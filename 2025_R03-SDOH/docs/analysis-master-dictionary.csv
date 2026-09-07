@@ -3,7 +3,7 @@
 "demo_yrs","demographics","covariate","deidentified workbook","Imported age in years","years","higher older","source missing retained","working","primary","Self-report"
 "demo_gender","demographics","covariate","deidentified workbook","Imported gender category","category","none","source missing retained","working","primary","Category coding requires analyst review"
 "demo_sab","demographics","covariate","deidentified workbook","Imported sex assigned at birth","category","none","source missing retained","working","primary","Self-report"
-"demo_race","demographics","covariate","deidentified workbook","Imported race category","category","none","source missing retained","working","primary","Collapsed source categories"
+"demo_race","demographics","covariate","deidentified workbook","Imported race category","category","none","source missing retained","working","primary","Original source categories retained; any analytic collapsing requires review"
 "demo_eth","demographics","covariate","deidentified workbook","Imported ethnicity category","category","none","source missing retained","working","primary","Self-report"
 "demo_quota","survey urbanicity","descriptor","deidentified workbook","Imported survey Urban/Suburban/Rural classification/quota","Urban/Suburban/Rural category","none","source missing retained","working","diagnostic","Survey classification distinct from broad region and GIS-derived RUCA"
 "region","geography","descriptor","deidentified workbook","Imported broad region","category","none","source missing retained","working","diagnostic","Not a precise geocode"

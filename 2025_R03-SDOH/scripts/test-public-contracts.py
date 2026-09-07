@@ -121,6 +121,10 @@ def main() -> int:
     require(all(level in quota_text for level in ("urban", "suburban", "rural")),
             "demo_quota must document the Urban/Suburban/Rural survey categories")
 
+    race_text = " ".join(dictionary_by_variable["demo_race"].values()).lower()
+    require("collapsed" not in race_text and "source categories retained" in race_text,
+            "demo_race must document that the current master retains source categories")
+
     social_linkage = (project / "code/context/03_link_social_capital.R").read_text(encoding="utf-8")
     require("normalize_zip(link$zip_current)" in social_linkage and
             "match(current_zip, sc$zip)" in social_linkage and
