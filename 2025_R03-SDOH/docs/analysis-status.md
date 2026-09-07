@@ -1,47 +1,44 @@
 # SDOH analysis status
 
-## Authoritative private source
+## Complete / validated
 
-The authoritative participant-level source is the reviewed N=709 file supplied
-through controlled private storage. It uses `study_id` as the join key and is
-not stored in Git. Current and childhood ZIPs also remain private. No
-participant-level data belong in this public repository.
+- The authoritative private workbook is structurally validated at 709 rows and
+  300 columns; `study_id` is complete and unique.
+- The retained sample passes the documented attention check and `gc == 1`; the
+  pipeline applies no new exclusion.
+- A modular one-command pipeline builds a private analysis master without ZIPs.
+- FEVS, eCog, 7 Up 7 Down/SUSD, UCLA loneliness, MSPSS, and Need to Belong have
+  explicit response maps, missingness rules, and range checks.
+- Two categorical fraud/loss items are recoded into separate loss-band and
+  any-loss variables.
+- Three identifier-free aggregate historical model-screen references are
+  preserved publicly. Their 35 unique formulas (16 FEVS, 19 OAFEM) can be
+  classified and rerun automatically when required variables exist.
+- A fixed, non-p-value-selected grant model framework and systematic private
+  draft figures are generated on every run.
 
-## Existing reusable work
+## Implemented but needs scientific review
 
-- `code/scoring/scoring-mastersheet.Rmd` preserves prior, privacy-hardened
-  scoring blocks.
-- `code/ExploratoryFEVS_ECOG.Rmd` and `code/mk.R` preserve related but divergent
-  exploratory FEVS/eCog, demographic, and social analyses.
-- `derivatives/figures/` contains four prior exploratory figures.
-- `docs/analytic-variable-dictionary.csv` is a partial, legacy public
-  dictionary. It is not a complete description of the N=709 analytic source.
+- OAFEM item responses are recoded, but the generic 30 item names cannot be
+  mapped reliably to published severity categories. The pipeline emits only a
+  clearly named unweighted complete-case diagnostic; it does not claim a
+  verified weighted OAFEM total.
+- PROMIS-29 raw domain sums and pain intensity are generated. Confirm the exact
+  administered profile/version before applying official T-score conversions.
+- The two fraud/loss variables have unambiguous ordered response bands, but
+  their distinct question meanings need a codebook/item-text decision.
 
-No aggregate FEVS/OAFEM model-screen CSVs or generator script were located in
-the repository during this cleanup.
+## Not yet reconstructed
 
-## What can be recycled
+- No contextual score exists in the N=709 source. Historical evidence names
+  `ec_zip`, `exposure_grp_mem_zip`, `gini`, and `geo_f`, plus an address-to-Census
+  block-group/Neighborhood Atlas ADI and PM2.5 workflow. The exact ADI release,
+  PM2.5 provider/version, rurality source, and acceptability of substituting a
+  current-ZIP linkage are unresolved. No source or vintage was guessed.
+- Consequently, context-dependent historical and candidate models remain
+  automatically classified as not runnable until a reviewed private linkage is
+  supplied.
 
-- Scoring blocks after their measure definitions and item mappings are verified.
-- Prior FEVS, eCog, loneliness, demographic, and social model and plotting code.
-- Prior model formulas embedded in the exploratory scripts.
-- Existing contextual-variable names used by the exploratory work.
-
-## Major incomplete items
-
-- Build one validated N=709 scoring pipeline.
-- Verify and complete OAFEM scoring.
-- Implement and verify PROMIS and health scoring.
-- Transparently regenerate every grant-relevant derived variable.
-- Build reproducible current-ZIP contextual linkage with source and vintage
-  documented.
-- Locate or recreate auditable generator code for the prior model screen.
-- Rerun candidate models with the clean N=709 source.
-- Produce grant-ready figures and results.
-
-## Privacy and data-release status
-
-The row-level N=709 source remains private. A candidate public-use dataset is
-future work, not an existing repository artifact. Full ZIP must not be included
-in a public-use dataset, and any participant-level release requires a formal
-disclosure-risk review before publication.
+Private validation, comparison, candidate-result, linkage-audit, and figure
+outputs are regenerated under `private-data/derived/`; they must not be
+committed.

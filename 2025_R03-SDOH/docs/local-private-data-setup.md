@@ -21,8 +21,17 @@ configure paths such as:
 ```text
 SDOH_SOURCE_DATA=/absolute/local/path/2025_R03-SDOH/private-data/QualtricsData_SDOH_DEIDENTIFIED.xlsx
 SDOH_PRIVATE_DERIVATIVES_DIR=/absolute/local/path/2025_R03-SDOH/private-data/derived
-SDOH_PRIVATE_MASTER=/absolute/local/path/2025_R03-SDOH/private-data/analysis-master.csv
 ```
+
+No environment configuration is required when the workbook is at the
+recommended default path. Run the complete workflow from the repository root:
+
+```sh
+bash 2025_R03-SDOH/scripts/run-private-pipeline.sh
+```
+
+Optional reviewed contextual linkage may be supplied with
+`SDOH_CONTEXT_DATA`; set `SDOH_CONTEXT_VARIABLE` to its primary exposure.
 
 Verify the source is ignored:
 

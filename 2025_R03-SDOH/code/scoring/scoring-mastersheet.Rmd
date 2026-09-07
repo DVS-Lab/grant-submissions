@@ -362,15 +362,20 @@ write.csv(mandf_data, file.path(private_derivatives_dir, "mandf_scoring.csv"), r
 
 ```{r}
 
-# Select relevant columns
+# LEGACY CROSS-STUDY BLOCK ONLY. The reviewed N=709 SDOH source has no Q341_
+# fields, and Q341_24 is not the SDOH attention check. Historical code excluded
+# Q341_24, but its role cannot be verified from the present project evidence.
+if (!"Q341_24" %in% names(data)) {
+  stop("Legacy Planfulness block is not applicable: Q341_24/Q341_* are absent from N=709.")
+}
 planfullness_data <- data %>%
   select(study_id, starts_with("Q341_")) %>%
-  select(-Q341_24)  # Remove attention check
+  select(-Q341_24)
 
-# Get just the Q341_ columns
+# Get SUSD item columns
 q_cols <- grep("^Q341_", names(planfullness_data), value = TRUE)
 
-# Renumber Q341_ columns
+# Normalize SUSD item numbering
 new_q_names <- paste0("Q341_", seq_along(q_cols))
 names(planfullness_data)[names(planfullness_data) %in% q_cols] <- new_q_names
 
@@ -551,10 +556,10 @@ write.csv(spsrq_data, file.path(private_derivatives_dir, "spsrq_scoring.csv"), r
 susd_data <- data %>%
   select(study_id, starts_with("susd_matrix_"))
 
-# Get just the Q341_ columns
+# Get USIDEP item columns
 q_cols <- grep("^susd_matrix_", names(susd_data), value = TRUE)
 
-# Renumber Q341_ columns
+# Normalize USIDEP item numbering
 new_q_names <- paste0("susd_matrix_", seq_along(q_cols))
 names(susd_data)[names(susd_data) %in% q_cols] <- new_q_names
 
@@ -712,7 +717,6 @@ write.csv(
 
 
 ```
-
 
 
 

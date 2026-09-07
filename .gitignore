@@ -59,6 +59,7 @@ rsconnect/
 
 # Public documentation describing private-data handling
 !2025_R03-SDOH/docs/local-private-data-setup.md
+!2025_R03-SDOH/scripts/run-private-pipeline.sh
 
 # Raw survey / panel exports
 **/*Qualtrics*
@@ -97,3 +98,8 @@ rsconnect/
 
 # Metadata-only dictionary is intentionally public
 !2025_R03-SDOH/docs/analytic-variable-dictionary.csv
+
+# Verified aggregate-only historical model-screen references
+!2025_R03-SDOH/derivatives/model-screening/all-models.csv
+!2025_R03-SDOH/derivatives/model-screening/chetty-models.csv
+!2025_R03-SDOH/derivatives/model-screening/non-chetty-models.csv
