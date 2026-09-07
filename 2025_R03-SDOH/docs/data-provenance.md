@@ -13,9 +13,11 @@ The current one-command pipeline:
 2. require the project-specific `study_id` as the participant join key;
 3. reject Qualtrics `ResponseId`, exact date of birth, contact fields, vendor
    identifiers, and other direct survey/platform identifiers;
-4. keep full current/childhood ZIP and address-level information within the
-   controlled GIS-linkage environment; and
-5. write row-level derivatives only to `SDOH_PRIVATE_DERIVATIVES_DIR`.
+4. keep current/childhood ZIP and intermediate ZCTA linkage inside the
+   controlled private GIS-linkage environment;
+5. download only fixed national public context sources, never sending a
+   participant-derived ZIP/ZCTA list to a remote service; and
+6. write row-level derivatives only to `SDOH_PRIVATE_DERIVATIVES_DIR`.
 
 Current analyses read the private `analysis-master.csv` generated beneath
 `SDOH_PRIVATE_DERIVATIVES_DIR`. No source workbook or row-level derivative is

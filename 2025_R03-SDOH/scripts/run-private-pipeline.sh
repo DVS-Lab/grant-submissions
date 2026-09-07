@@ -34,21 +34,23 @@ export SDOH_SOURCE_DATA="$source_data"
 export SDOH_PRIVATE_DERIVATIVES_DIR="$private_derivatives"
 export SDOH_EXPECTED_N=709
 
-scripts=(
-  01_validate_source.R
-  02_score_core_measures.R
-  03_build_analysis_master.R
-  04_validate_scores.R
-  04b_audit_context_linkage.R
-  05_rerun_prior_model_screen.R
-  06_grant_candidate_analyses.R
-  07_generate_figure_candidates.R
-)
+pipeline_scripts=(01_validate_source.R 02_score_core_measures.R)
+for script in "${pipeline_scripts[@]}"; do
+  printf 'Running %s\n' "$script"
+  Rscript "$project_root/code/pipeline/$script"
+done
 
-for script in "${scripts[@]}"; do
+context_scripts=(00_prepare_context_sources.R 01_validate_zip.R 02_zip_to_zcta.R 03_link_social_capital.R 04_link_deprivation.R 05_link_income_inequality.R 06_link_pm25.R 07_link_rurality.R 08_link_crime_disorder.R 09_build_context_master.R 10_validate_context.R)
+for script in "${context_scripts[@]}"; do
+  printf 'Running context/%s\n' "$script"
+  Rscript "$project_root/code/context/$script"
+done
+
+pipeline_scripts=(03_build_analysis_master.R 04_validate_scores.R 05_rerun_prior_model_screen.R 06_grant_candidate_analyses.R 07_generate_figure_candidates.R 08_build_review_packet.R)
+for script in "${pipeline_scripts[@]}"; do
   printf 'Running %s\n' "$script"
   Rscript "$project_root/code/pipeline/$script"
 done
 
 bash "$project_root/scripts/check-public-files.sh"
-printf 'Private pipeline complete. Inspect 2025_R03-SDOH/private-data/derived/.\n'
+printf 'Private pipeline complete. Open 2025_R03-SDOH/private-data/derived/melanie-review-packet.md first.\n'

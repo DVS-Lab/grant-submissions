@@ -13,6 +13,7 @@ grant-submissions/
     private-data/
       QualtricsData_SDOH_DEIDENTIFIED.xlsx
       derived/
+      reference/
 ```
 
 The root `.gitignore` protects `private-data/`. In a local, ignored `.Renviron`,
@@ -30,8 +31,19 @@ recommended default path. Run the complete workflow from the repository root:
 bash 2025_R03-SDOH/scripts/run-private-pipeline.sh
 ```
 
-Optional reviewed contextual linkage may be supplied with
-`SDOH_CONTEXT_DATA`; set `SDOH_CONTEXT_VARIABLE` to its primary exposure.
+The PM2.5 polygon aggregation uses a private local Python environment. Create it
+once before the first full run:
+
+```sh
+python3 -m venv 2025_R03-SDOH/private-data/reference/.venv-context
+2025_R03-SDOH/private-data/reference/.venv-context/bin/python -m pip install \
+  -r 2025_R03-SDOH/code/context/requirements.txt
+```
+
+Public context downloads are cached under ignored `private-data/reference/`.
+If the environment is absent, the pipeline stops before PM2.5 with a concise
+dependency message. `SDOH_CONTEXT_PYTHON` may point to an equivalent
+environment elsewhere.
 
 Verify the source is ignored:
 

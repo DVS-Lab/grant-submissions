@@ -18,4 +18,24 @@ prob_gam,Yes to any item on BBGS,,
 prob_gam_two,Yes to two items on BBGS,,
 ecog_score,Sum of items / number of items completed,,
 ,,,
-,,,
+oafem_weighted_total,OAFEM severity-weighted sum of rated items,,0-124; higher indicates more exploitation indicators
+oafem_items_rated,Number of OAFEM items with No/Suspected/Yes response,,0-30
+ctb_mean,Convex Time Budget mean allocation score,,1-6; higher indicates stronger delayed-reward preference
+promis_physical_function_t,PROMIS-29 v2.0 physical-function T score,,Higher indicates better function
+promis_anxiety_t,PROMIS-29 v2.0 anxiety T score,,Higher indicates greater burden
+promis_depression_t,PROMIS-29 v2.0 depression T score,,Higher indicates greater burden
+promis_fatigue_t,PROMIS-29 v2.0 fatigue T score,,Higher indicates greater burden
+promis_sleep_disturbance_t,PROMIS-29 v2.0 sleep-disturbance T score,,Higher indicates greater burden
+promis_social_roles_t,PROMIS-29 v2.0 ability-to-participate T score,,Higher indicates better function
+promis_pain_interference_t,PROMIS-29 v2.0 pain-interference T score,,Higher indicates greater burden
+promis_pain_intensity,PROMIS pain intensity,,0-10
+fraud_lifetime_band,Lifetime fraud-loss response band,,Ordinal category; not exact dollars
+fraud_lifetime_any,Any lifetime fraud loss,,0/1
+fraud_12mo_band,Past-12-month fraud-loss response band,,Ordinal category; not exact dollars
+fraud_12mo_any,Any past-12-month fraud loss,,0/1
+sdi_zcta,Robert Graham Center ZCTA Social Deprivation Index,,0-100; higher indicates more deprivation
+pm25_2012_2022_zcta,Area-weighted current-ZCTA PM2.5 mean for 2012-2022,,Micrograms per cubic meter
+socialcap_economic_connectedness,Opportunity Insights ZIP economic connectedness,,Higher indicates more cross-SES connectedness
+gini_zcta,ACS 2024 five-year B19083 ZCTA Gini,,0-1; higher indicates more inequality
+ruca_primary,USDA ERS 2020 primary RUCA ZIP code,,1-10
+env_burden_simple,Exploratory equal-weight environmental-burden composite,,Higher indicates more burden; requires at least three prespecified components

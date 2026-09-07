@@ -1,0 +1,8 @@
+exactextract>=0.3,<0.4
+geopandas>=1.1,<2
+netCDF4>=1.7,<2
+numpy>=2,<3
+pandas>=2,<3
+pyogrio>=0.11,<1
+rasterio>=1.4,<2
+xarray>=2025.6,<2027

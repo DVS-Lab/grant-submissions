@@ -5,6 +5,7 @@ set -euo pipefail
 repo_root=$(git rev-parse --show-toplevel)
 project_path="2025_R03-SDOH"
 approved_dictionary="2025_R03-SDOH/docs/analytic-variable-dictionary.csv"
+approved_oafem_map="2025_R03-SDOH/docs/oafem-item-map.csv"
 approved_model_screen_prefix="2025_R03-SDOH/derivatives/model-screening/"
 unix_users_root="/Users"
 windows_users_segment='\\Users\\'
@@ -16,6 +17,7 @@ while IFS= read -r tracked_path; do
   case "$normalized_path" in
     *.csv)
       if [[ "$tracked_path" != "$approved_dictionary" && \
+            "$tracked_path" != "$approved_oafem_map" && \
             "$tracked_path" != "${approved_model_screen_prefix}all-models.csv" && \
             "$tracked_path" != "${approved_model_screen_prefix}chetty-models.csv" && \
             "$tracked_path" != "${approved_model_screen_prefix}non-chetty-models.csv" ]]; then

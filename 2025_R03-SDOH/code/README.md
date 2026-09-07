@@ -2,15 +2,16 @@
 
 ## Current
 
-`pipeline/` is the validated N=709 workflow. There is exactly one documented
-entry point:
+`pipeline/` and `context/` together form the validated N=709 workflow. There is
+exactly one documented entry point:
 
 ```bash
 bash 2025_R03-SDOH/scripts/run-private-pipeline.sh
 ```
 
 The pipeline's boundaries and output files are documented in
-[`pipeline/README.md`](pipeline/README.md).
+[`pipeline/README.md`](pipeline/README.md); source-specific geographic methods
+are documented in [`context/README.md`](context/README.md).
 
 ## Legacy reference only
 

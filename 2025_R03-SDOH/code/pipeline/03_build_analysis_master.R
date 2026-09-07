@@ -21,14 +21,23 @@ context_path <- Sys.getenv(
   unset = file.path(derived_dir(), "current-zip-context.csv")
 )
 if (file.exists(context_path)) {
-  context <- utils::read.csv(context_path, check.names = FALSE)
+  context <- utils::read.csv(context_path, check.names = FALSE, na.strings = c("", "NA", "N/A"))
   require_columns(context, "study_id", "context linkage")
   if (anyDuplicated(context$study_id)) stop("Context linkage has duplicate study_id values.")
   prohibited_geo <- grep("zip|address|latitude|longitude|(^|_)lat($|_)|(^|_)lon($|_)", names(context), ignore.case = TRUE, value = TRUE)
+  # These are published Social Capital Atlas construct names, not ZIP identifiers.
+  prohibited_geo <- setdiff(prohibited_geo, c("ec_zip", "exposure_grp_mem_zip"))
   keep <- setdiff(names(context), c("study_id", prohibited_geo))
   master <- merge(master, context[c("study_id", keep)], by = "study_id", all.x = TRUE, sort = FALSE)
   master <- master[match(d$study_id, master$study_id), , drop = FALSE]
 }
+
+# Historical aggregate model-screen compatibility. Old coefficient labels prove
+# geo_f was an Urban/Suburban/Rural factor; minority's old coding is not known
+# and is deliberately not reconstructed. The old OAFEM alias now points to the
+# correctly severity-weighted outcome for the requested descriptive rerun.
+master$geo_f <- factor(master$demo_quota, levels = c("Urban", "Suburban", "Rural"))
+master$oafem_adult_total <- master$oafem_weighted_total
 
 if (nrow(master) != nrow(d) || anyDuplicated(master$study_id)) stop("Analysis master lost or duplicated records.")
 prohibited_geo_names <- c("demo_zip_prim", "demo_zip_child")

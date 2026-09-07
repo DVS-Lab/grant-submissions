@@ -35,6 +35,12 @@ read_source <- function() {
   d <- as.data.frame(readxl::read_excel(source_path(), sheet = sheets[[1]], guess_max = 10000))
   names(d) <- clean_names(names(d))
   if (anyDuplicated(names(d))) stop("Column names are duplicated after whitespace normalization.")
+  d[] <- lapply(d, function(x) {
+    if (!is.character(x)) return(x)
+    y <- trimws(gsub("\u00a0", " ", x, fixed = TRUE))
+    y[tolower(y) %in% c("", "na", "n/a")] <- NA_character_
+    y
+  })
   d
 }
 
@@ -86,7 +92,14 @@ write_private_csv <- function(x, filename) {
 read_private_csv <- function(filename) {
   path <- file.path(derived_dir(), filename)
   if (!file.exists(path)) stop("Required private pipeline output is missing: ", path)
-  utils::read.csv(path, check.names = FALSE)
+  d <- utils::read.csv(path, check.names = FALSE, na.strings = c("", "NA", "N/A"))
+  d[] <- lapply(d, function(x) {
+    if (!is.character(x)) return(x)
+    y <- trimws(gsub("\u00a0", " ", x, fixed = TRUE))
+    y[tolower(y) %in% c("", "na", "n/a")] <- NA_character_
+    y
+  })
+  d
 }
 
 model_terms <- function(fit) {

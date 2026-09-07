@@ -67,6 +67,8 @@ rsconnect/
 **/rawdata/
 **/raw-data/
 **/private-data/
+**/__pycache__/
+*.pyc
 
 # Local participant-level source data
 **/sourcedata/*.xlsx
