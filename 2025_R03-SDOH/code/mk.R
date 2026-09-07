@@ -59,17 +59,16 @@ summary_stats <- df |>
   arrange(dimension, desc(n))
 summary_stats
 
-# Gender difference ttest -  NO DIFFERENCE
+# Gender comparison
 t_gender <- t.test(fevs_total ~ demo_gender, data = df)
 t_gender
 summary(lm(fevs_total ~ demo_gender, data = df))
 
-# Race difference, ANOVA - Black > White is significant, p > .001 (when demo_race is factor)
+# Race comparison (ANOVA)
 df$factor_race <- as.factor(df$demo_race)
 aov_race <- aov(fevs_total ~ factor_race, data = df)
 summary(aov_race)
 TukeyHSD(aov_race)
-# Issues with not enough subjects that are non-black or non-white (amend version); Black > White, p > .01
 aov_race2 <- aov(fevs_total ~ race_group, data = df)
 summary(aov_race2)
 TukeyHSD(aov_race2)
@@ -78,7 +77,7 @@ aov_race3 <- aov(fevs_total ~ race_group2, data = df)
 summary(aov_race3)
 TukeyHSD(aov_race3)
 
-# Income difference (ANOVA), Lvl 5 ($101,000-$150,000) > Lvl 1 ($0-$25,000) is significant, p = .02
+# Income comparison (ANOVA)
 aov_income <- aov(fevs_total ~ factor(ses_thi), data = df)
 summary(aov_income)
 TukeyHSD(aov_income)
@@ -90,9 +89,9 @@ df <- df |>
     income_group = factor(income_group, levels = c("Low_Income", "High_Income"))
   )
 t_income <- t.test(fevs_total ~ income_group, data = df)
-t_income # Significant, p = .002
+t_income
 
-# Location difference (ANOVA) - No sig., trending ? p = .11
+# Location comparison (ANOVA)
 aov_loc <- aov(fevs_total ~ demo_quota, data = df)
 summary(aov_loc)
 
@@ -138,7 +137,7 @@ cols_race   <- c("White"="skyblue","Non-White"="green4")
 cols_inc    <- c("Low_Income"="gold2","High_Income"="dodgerblue")
 cols_loc    <- c("Urban"="blue","Suburban"="maroon","Rural"="yellowgreen")
 
-# p-values from your already-run tests
+# Extract p-values from the fitted comparison models
 p_gender <- t_gender$p.value
 p_race3  <- summary(aov_race3)[[1]][["Pr(>F)"]][1]
 p_income <- t_income$p.value
@@ -166,9 +165,8 @@ df$demo_gender <- relevel(df$demo_gender, ref = "Male")
 df$income_group <- relevel(df$income_group, ref = "Low_Income")
 summary(lm(fevs_total ~ demo_quota + demo_gender + income_group + race_group2, data = df))
 
-# Race and income significant... what about their interaction?
+# Race-by-income interaction
 summary(lm(fevs_total ~ demo_quota + demo_gender + income_group * race_group2, data = df))
-# Interaction NOT significant, p = .66
 
 
 # Let's mean-center continuous covariates...
@@ -182,7 +180,6 @@ df <- df |>
 summary(lm(fevs_total ~ race_group2 * income_group + demo_gender + demo_quota +
   uclal_total_MC + usidep_classification_MC + ecog_score_MC +
   demo_yrs_MC + ntb_total_MC + mspss_mean_MC , data = df))
-# Nothing for interaction, p = .22
 
 summary(lm(fevs_total ~ demo_gender + race_group2 + income_group + demo_quota +
              uclal_total_MC + usidep_classification_MC + ecog_score_MC +
@@ -220,9 +217,9 @@ summary(lm(fevs_total ~ uclal_total_MC + usidep_classification_MC  + ecog_score_
            data = df))
 
 
-# ECOG and demographics factors: income (.005), race (.012), gender (NS), region (NS)
-df$demo_quota <- relevel(df$demo_quota, "Rural") # no significant with ECOG
-df$demo_quota <- relevel(df$demo_quota, "Urban") # no significant with ECOG
+# ECOG interaction models by demographic factors
+df$demo_quota <- relevel(df$demo_quota, "Rural")
+df$demo_quota <- relevel(df$demo_quota, "Urban")
 
 summary(lm(fevs_total ~ demo_quota * ecog_score_MC +
              uclal_total_MC + usidep_classification_MC  + ecog_score_MC + demo_gender + race_group2 + income_group + demo_quota + 
@@ -272,9 +269,9 @@ ggplot(df, aes(x = ecog_score, y = fevs_total, color = race_group2)) +
   )
 
 
-# 3 way, let's add in region (NS), gender (NS), race (trending, .165)
-df$demo_quota <- relevel(df$demo_quota, "Rural") # no significant with ECOG x Income
-df$demo_quota <- relevel(df$demo_quota, "Urban") # no significant with ECOG x Income
+# Three-way ECOG, income, and region interaction model
+df$demo_quota <- relevel(df$demo_quota, "Rural")
+df$demo_quota <- relevel(df$demo_quota, "Urban")
 summary(lm(fevs_total ~ income_group * ecog_score_MC * demo_quota +
              uclal_total_MC + usidep_classification_MC  + ecog_score_MC + demo_gender + race_group2 + income_group + demo_quota + 
              demo_yrs_MC + ntb_total_MC + mspss_mean_MC,
@@ -282,7 +279,7 @@ summary(lm(fevs_total ~ income_group * ecog_score_MC * demo_quota +
 
 
 ######################
-# Now, let's look at loneliness: income (.045), race (NS), region (NS), gender (NS)
+# Loneliness interaction models
 summary(lm(fevs_total ~ income_group * uclal_total_MC +
              uclal_total_MC + usidep_classification_MC  + ecog_score_MC + demo_gender + race_group2 + income_group + demo_quota + 
              demo_yrs_MC + ntb_total_MC + mspss_mean_MC,
@@ -310,7 +307,7 @@ summary(lm(fevs_total ~ demo_quota * uclal_total_MC +
              demo_yrs_MC + ntb_total_MC + mspss_mean_MC,
            data = df))
 
-# 3 way interactions with loneliness and income: gender (.125), 
+# Three-way loneliness, income, and region interaction model
 summary(lm(fevs_total ~ demo_quota * income_group * uclal_total_MC +
              uclal_total_MC + usidep_classification_MC  + ecog_score_MC + demo_gender + race_group2 + income_group + demo_quota + 
              demo_yrs_MC + ntb_total_MC + mspss_mean_MC,
@@ -323,19 +320,16 @@ summary(lm(fevs_total ~ uclal_total_MC * income_group
               + usidep_classification_MC  + ecog_score_MC + 
              demo_gender + race_group2 + demo_quota + demo_yrs_MC + ntb_total_MC + mspss_mean_MC,
            data = df))
-# Significant loneliness x income, .045
 
 summary(lm(fevs_total ~ uclal_total_MC * income_group * race_group2 +
            + usidep_classification_MC  + ecog_score_MC + 
              demo_gender + race_group2 + demo_quota + demo_yrs_MC + ntb_total_MC + mspss_mean_MC,
            data = df))
-# No 3 way of loneliness, income, race
 
 summary(lm(fevs_total ~ uclal_total_MC * income_group * demo_gender +
             uclal_total_MC + usidep_classification_MC  + ecog_score_MC + 
              income_group + demo_gender + race_group2 + demo_quota + demo_yrs_MC + ntb_total_MC + mspss_mean_MC,
            data = df))
-# Loneliness, income, gender trending
 
 
 

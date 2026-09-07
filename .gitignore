@@ -57,6 +57,9 @@ rsconnect/
 **/*contact*
 **/*email_capture*
 
+# Public documentation describing private-data handling
+!2025_R03-SDOH/docs/local-private-data-setup.md
+
 # Raw survey / panel exports
 **/*Qualtrics*
 **/*REDCap*

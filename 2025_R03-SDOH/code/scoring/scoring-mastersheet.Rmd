@@ -5,6 +5,11 @@ date: "2025-04-19"
 output: html_document
 ---
 
+> **Status:** This file preserves prior scoring code that has been
+> privacy-hardened to read the reviewed private source. It is useful as a source
+> of reusable scoring blocks, but it is not yet a fully validated current N=709
+> scoring pipeline.
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -110,18 +115,9 @@ if (anyDuplicated(data$study_id)) {
 
 ```{r}
 
-# Remove people who failed the attention check. The source field must be named
-# explicitly because the intended Qualtrics column is not documented here.
-attention_check_field <- Sys.getenv("SDOH_ATTENTION_CHECK_FIELD")
-if (!nzchar(attention_check_field)) {
-  stop("Set SDOH_ATTENTION_CHECK_FIELD to the reviewed attention-check column.")
-}
-if (!attention_check_field %in% names(data)) {
-  stop("SDOH_ATTENTION_CHECK_FIELD is not present in the private source.")
-}
-
-data <- data[data[[attention_check_field]] == 3, ]
-
+# Quality-control exclusions were applied upstream when constructing the
+# reviewed analytic source. This script does not reapply participant
+# exclusions.
 
 ```
 
@@ -716,7 +712,6 @@ write.csv(
 
 
 ```
-
 
 
 

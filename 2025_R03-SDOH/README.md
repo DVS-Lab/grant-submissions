@@ -16,8 +16,6 @@ The authoritative analytic source is the reviewed, direct-identifier-free
   vendor/panel identifiers, or other direct identifiers.
 - Set `SDOH_PRIVATE_DERIVATIVES_DIR` for private row-level scoring outputs.
 - Set `SDOH_PRIVATE_MASTER` for private analysis-ready derivatives.
-- Set `SDOH_ATTENTION_CHECK_FIELD` only after the appropriate source variable
-  has been reviewed and confirmed.
 
 Full current/childhood ZIP and any address-level information needed for GIS
 linkage must remain within the controlled private environment.
@@ -29,9 +27,18 @@ must not be committed to this repository.
 Any future public participant dataset requires separate disclosure-risk and
 scientific review and should use a random project-specific `study_id`.
 
-## Important scientific issue
+## Current analysis status
 
-`ntb_total` is the total for the **Need to Belong** scale (`ntb_1`–`ntb_10`).
-It is not an objective neuropsychological battery score.
+The authoritative participant-level source is the private reviewed N=709 file,
+and `study_id` is its join key. This public repository preserves prior scoring
+code, exploratory analyses, documentation, and aggregate figures/results.
+Those materials contain reusable work, but they do not yet form one fully
+validated end-to-end N=709 analysis pipeline.
+
+Participant-level inputs, current and childhood ZIPs, and row-level derivatives
+remain local and private. See [`docs/analysis-status.md`](docs/analysis-status.md)
+for the detailed analyst handoff map and
+[`docs/local-private-data-setup.md`](docs/local-private-data-setup.md) for safe
+local setup.
 
 See [`docs/privacy-protections.md`](docs/privacy-protections.md).
