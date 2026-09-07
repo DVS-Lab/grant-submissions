@@ -2,7 +2,8 @@
 
 ## Current
 
-`pipeline/` and `context/` together form the validated N=709 workflow. There is
+`pipeline/` and `context/` together form the reproducible N=709 working pipeline
+pending independent scientific validation. There is
 exactly one documented entry point:
 
 ```bash

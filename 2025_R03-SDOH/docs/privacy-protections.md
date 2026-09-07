@@ -15,6 +15,9 @@ results without publishing participant-level source or analytic data.
 - Row-level scoring outputs are written only to ignored private locations.
 - Root ignore rules block common participant-data formats within the SDOH
   project.
+- `scripts/check-public-files.sh` rejects unexpected tracked data files, and
+  `scripts/test-privacy-negative.sh` verifies that behavior with synthetic-only
+  data.
 - The public variable dictionary contains metadata only and excludes exact DOB
   and full current/childhood ZIP fields.
 

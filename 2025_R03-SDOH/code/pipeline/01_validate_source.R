@@ -72,6 +72,6 @@ lines <- c(
   "",
   "No exclusion was applied. Categorical participant values and row-level records are intentionally omitted from this report."
 )
-writeLines(lines, file.path(derived_dir(), "source-qc.md"))
+atomic_write_lines(lines, file.path(derived_dir(), "source-qc.md"))
 if (!att_ok || !gc_ok) stop("Attention-check or gc validation did not match the documented retained-sample expectation.")
-cat("Validated private source: N=", nrow(d), ", columns=", ncol(d), ".\n", sep = "")
+cat("Checked private source structure: N=", nrow(d), ", columns=", ncol(d), ".\n", sep = "")

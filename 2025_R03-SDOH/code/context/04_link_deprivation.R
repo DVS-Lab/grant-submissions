@@ -13,7 +13,7 @@ adi_lines <- c(
   "",
   "No ADI proxy was generated. Neighborhood Atlas validates ADI at census block-group geography and requires credentialed access to its block-group files. A ZIP-only participant location cannot be linked directly without an explicitly weighted block-group-to-ZCTA aggregation.",
   "",
-  "A future `adi_zcta_proxy` should be created only after an approved Neighborhood Atlas vintage and a reproducible population-weighted block-group-to-ZCTA crosswalk are supplied. It must remain an exploratory sensitivity exposure and be labeled as an unvalidated ZIP/ZCTA approximation."
+  "A future `adi_zcta_proxy` should be created only after an approved Neighborhood Atlas vintage and a reproducible population-weighted block-group-to-ZCTA crosswalk are supplied. It must remain an exploratory sensitivity exposure and be labeled as a nonstandard ZIP/ZCTA approximation pending independent review."
 )
-writeLines(adi_lines, context_file("adi-proxy-status.md"))
+atomic_write_lines(adi_lines, context_file("adi-proxy-status.md"))
 message("Linked ZCTA SDI; documented the concrete ADI access/validation barrier.")

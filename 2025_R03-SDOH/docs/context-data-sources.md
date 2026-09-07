@@ -1,6 +1,7 @@
 # Context data sources
 
-This public inventory records provenance only. The private
+This readable inventory records provenance only. The machine-readable authority
+used by the code is `config/reproducibility-sources.json`. The private
 `private-data/reference/source-manifest.csv` additionally records retrieval
 dates, local filenames, and SHA256 checksums; it remains ignored because it is
 an operational local cache inventory.
@@ -9,7 +10,7 @@ an operational local cache inventory.
 
 - Source: archived 2022 UDS Mapper ZIP-to-ZCTA crosswalk, mirrored by the
   open-source `uds-mapper` project.
-- Download: <https://raw.githubusercontent.com/chris-prener/uds-mapper/main/data/uds_crosswalk_2022.csv>
+- Download: immutable commit URL recorded in the public source manifest.
 - Geography: five-digit ZIP to ZCTA, with ZIP type and join type.
 - Use: current ZIP is primary; childhood ZIP is feasibility-only.
 
@@ -46,13 +47,12 @@ an operational local cache inventory.
 
 ## Income inequality
 
-- Organization: U.S. Census Bureau, retrieved through Census Reporter's public
-  API because the direct Census API required a key in the execution environment.
-- Product: ACS 2024 five-year, table B19083, estimate B19083001.
+- Organization: U.S. Census Bureau.
+- Product: fixed ACS 2024 five-year table-based summary file B19083, estimate B19083_E001.
 - Geography: ZCTA. Range: 0–1.
-- API pattern: <https://api.censusreporter.org/1.0/data/show/latest?table_ids=B19083&geo_ids=860%7C04000US06>
-- The code downloads state hierarchies nationally; it never sends a
-  participant-derived ZCTA list.
+- Download: the fixed official Census file recorded in the public source manifest.
+- The code downloads the national table and filters ZCTA rows locally; it never
+  sends a participant-derived ZCTA list.
 
 ## Rural–Urban Commuting Area codes
 
@@ -65,8 +65,8 @@ an operational local cache inventory.
 
 ## Sources deliberately not linked
 
-- Neighborhood Atlas ADI: no ZIP variable was created. The source is validated
-  at census block-group geography and requires credentialed files; any future
+- Neighborhood Atlas ADI: no ZIP variable was created. The intended source
+  geography is census block group and files are credentialed; any future
   ZCTA approximation must be explicitly labeled and use documented weights.
 - Crime/disorder: FBI/UCR and academic sources were reviewed, but no consistent
   national contemporary ZIP/ZCTA product was found. A private source-audit

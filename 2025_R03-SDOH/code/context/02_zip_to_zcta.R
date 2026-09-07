@@ -37,5 +37,5 @@ lines <- c(
   paste0("- Childhood ZIP to ZCTA matched N: ", sum(valid_child & !is.na(out$zcta_child)), " (", round(100 * mean(!is.na(out$zcta_child[valid_child])), 1), "%)"),
   "- Childhood linkage is feasibility-only; contemporary context values are not interpreted as historical childhood exposure."
 )
-writeLines(lines, context_file("zip-zcta-linkage-audit.md"))
+atomic_write_lines(lines, context_file("zip-zcta-linkage-audit.md"))
 message("Linked ZIP to ZCTA.")

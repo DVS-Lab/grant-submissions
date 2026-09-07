@@ -7,8 +7,8 @@ output: html_document
 
 > **Status:** This file preserves prior scoring code that has been
 > privacy-hardened to read the reviewed private source. It is useful as a source
-> of reusable scoring blocks, but it is not yet a fully validated current N=709
-> scoring pipeline.
+> of reusable scoring blocks, but it is not the current reproducible N=709
+> working pipeline and has not undergone the current independent review.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -717,7 +717,6 @@ write.csv(
 
 
 ```
-
 
 
 

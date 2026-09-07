@@ -25,5 +25,5 @@ lines <- c(
   paste0("- Invalid/missing childhood ZIP: ", sum(!out$zip_child_valid)),
   "- Participant ZIP values are retained only in ignored private linkage files."
 )
-writeLines(lines, context_file("zip-validation-audit.md"))
-message("Validated current and childhood ZIP fields.")
+atomic_write_lines(lines, context_file("zip-validation-audit.md"))
+message("Checked current and childhood ZIP fields.")

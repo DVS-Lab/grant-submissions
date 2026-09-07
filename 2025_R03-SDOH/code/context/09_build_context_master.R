@@ -47,8 +47,9 @@ corr_vars <- c(
   "socialcap_volunteering", "socialcap_civic_organizations", "ruca_primary"
 )
 corr <- stats::cor(context[corr_vars], use = "pairwise.complete.obs")
-utils::write.csv(corr, context_file("context-correlation.csv"), row.names = TRUE)
-png(context_file("context-correlation.png"), width = 1900, height = 1700, res = 220)
+atomic_write_csv(corr, context_file("context-correlation.csv"), row.names = TRUE)
+correlation_png <- tempfile(pattern = ".context-correlation-", tmpdir = derived_dir(), fileext = ".png.part")
+png(correlation_png, width = 1900, height = 1700, res = 220)
 par(mar = c(12, 12, 3, 2))
 image(seq_len(ncol(corr)), seq_len(nrow(corr)), t(corr[nrow(corr):1, ]),
       col = grDevices::colorRampPalette(c("#8b1e3f", "white", "#216869"))(101),
@@ -62,6 +63,7 @@ for (i in seq_len(nrow(corr))) for (j in seq_len(ncol(corr))) {
 }
 box()
 dev.off()
+if (!file.rename(correlation_png, context_file("context-correlation.png"))) stop("Could not install correlation figure.")
 
 pair_index <- which(upper.tri(corr) & abs(corr) >= .70, arr.ind = TRUE)
 flagged <- if (nrow(pair_index)) data.frame(
@@ -71,5 +73,5 @@ flagged <- if (nrow(pair_index)) data.frame(
   threshold = ifelse(abs(corr[pair_index]) >= .85, "|r| >= .85", "|r| >= .70"),
   row.names = NULL
 ) else data.frame(variable_1=character(), variable_2=character(), r=numeric(), threshold=character())
-utils::write.csv(flagged, context_file("context-correlation-flags.csv"), row.names = FALSE)
+write_context_csv(flagged, "context-correlation-flags.csv")
 message("Built private context master and exposure-redundancy audit.")

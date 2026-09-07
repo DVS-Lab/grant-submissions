@@ -34,7 +34,7 @@ outcome_counts <- table(unique(old[c("outcome", "model_formula")])$outcome)
 if (!identical(as.integer(outcome_counts[c("fevs_total", "oafem_adult_total")]), c(16L, 19L))) {
   stop("Unexpected FEVS/OAFEM formula counts in all-models.csv.")
 }
-writeLines(c(
+atomic_write_lines(c(
   "# Private model-screen reference audit", "",
   "- `all-models.csv`: 143 coefficient rows; 35 formulas (16 FEVS, 19 OAFEM).",
   "- `chetty-models.csv`: 79 coefficient rows; 22 formulas.",

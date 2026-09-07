@@ -85,8 +85,25 @@ available_mean <- function(d) {
 
 write_private_csv <- function(x, filename) {
   path <- file.path(derived_dir(), filename)
-  utils::write.csv(x, path, row.names = FALSE, na = "")
+  atomic_write_csv(x, path)
   invisible(path)
+}
+
+atomic_path <- function(path, writer) {
+  dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
+  temporary <- tempfile(pattern = paste0(".", basename(path), "-"), tmpdir = dirname(path), fileext = ".part")
+  on.exit(unlink(temporary), add = TRUE)
+  writer(temporary)
+  if (!file.rename(temporary, path)) stop("Could not atomically replace ", path)
+  invisible(path)
+}
+
+atomic_write_csv <- function(x, path, row.names = FALSE) {
+  atomic_path(path, function(temporary) utils::write.csv(x, temporary, row.names = row.names, na = ""))
+}
+
+atomic_write_lines <- function(x, path) {
+  atomic_path(path, function(temporary) writeLines(x, temporary, useBytes = TRUE))
 }
 
 read_private_csv <- function(filename) {
@@ -118,4 +135,10 @@ model_terms <- function(fit) {
 
 safe_formula_variables <- function(text) {
   tryCatch(all.vars(stats::as.formula(text)), error = function(e) character())
+}
+
+sha256_file <- function(path) {
+  line <- system2("shasum", c("-a", "256", shQuote(path)), stdout = TRUE, stderr = TRUE)
+  if (!length(line) || !grepl("^[0-9a-fA-F]{64}[[:space:]]", line[[1]])) stop("Could not calculate SHA256 for ", path)
+  sub("[[:space:]].*$", "", line[[1]])
 }

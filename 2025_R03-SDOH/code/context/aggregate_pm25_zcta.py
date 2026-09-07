@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
-"""Download ACAG annual PM2.5 grids and area-weight them to study ZCTAs.
-
-Participant geography never leaves the local machine: all remote requests are
-fixed public national files, and the private ZCTA list is read only after those
-files have been cached.
-"""
+"""Download pinned public PM2.5 inputs and area-weight them to private study ZCTAs."""
 
 from __future__ import annotations
 
 import argparse
 import hashlib
-import math
+import json
+import os
 import sys
+import time
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -26,42 +24,67 @@ from rasterio.io import MemoryFile
 from rasterio.transform import from_origin
 
 
-PM25_SHARED_NAME = "c3lmvqrvbjcrfpqoxb68nwl9tqhkl81g"
-PM25_FILES = {
-    2012: ("1754603492661", "V5NA05.HybridPM25.NorthAmerica.2012001-2012366.nc"),
-    2013: ("1754602504541", "V5NA05.HybridPM25.NorthAmerica.2013001-2013365.nc"),
-    2014: ("1754596682182", "V5NA05.HybridPM25.NorthAmerica.2014001-2014365.nc"),
-    2015: ("1754593833587", "V5NA05.HybridPM25.NorthAmerica.2015001-2015365.nc"),
-    2016: ("1754598627620", "V5NA05.HybridPM25.NorthAmerica.2016001-2016366.nc"),
-    2017: ("1754605120234", "V5NA05.HybridPM25.NorthAmerica.2017001-2017365.nc"),
-    2018: ("1754596084589", "V5NA05.HybridPM25.NorthAmerica.2018001-2018365.nc"),
-    2019: ("1754599987175", "V5NA05.HybridPM25.NorthAmerica.2019001-2019365.nc"),
-    2020: ("1754597327085", "V5NA05.HybridPM25.NorthAmerica.2020001-2020366.nc"),
-    2021: ("1754599202283", "V5NA05.HybridPM25.NorthAmerica.2021001-2021365.nc"),
-    2022: ("1754595614364", "V5NA05.HybridPM25.NorthAmerica.2022001-2022364.nc"),
-}
-ZCTA_URL = "https://www2.census.gov/geo/tiger/GENZ2020/shp/cb_2020_us_zcta520_500k.zip"
-ZCTA_NAME = "cb_2020_us_zcta520_500k.zip"
-
-
-def download(url: str, destination: Path) -> None:
-    if destination.exists() and destination.stat().st_size > 10_000:
-        return
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    temporary = destination.with_suffix(destination.suffix + ".part")
-    print(f"Downloading public reference: {destination.name}", flush=True)
-    with urllib.request.urlopen(url) as response, temporary.open("wb") as out:
-        while chunk := response.read(1024 * 1024):
-            out.write(chunk)
-    temporary.replace(destination)
-
-
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as stream:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def log_cache(source_id: str, filename: str, action: str) -> None:
+    path = os.environ.get("SDOH_CACHE_LOG")
+    if path:
+        with open(path, "a", encoding="utf-8") as stream:
+            stream.write(f"{source_id}\t{filename}\t{action}\n")
+
+
+def valid_file(path: Path, item: dict) -> bool:
+    return (path.exists() and path.stat().st_size == int(item["bytes"])
+            and sha256(path).lower() == item["sha256"].lower())
+
+
+def download_verified(source_id: str, item: dict, destination: Path) -> None:
+    if valid_file(destination, item):
+        log_cache(source_id, item["local_filename"], "reused")
+        return
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    temporary = Path(f"{destination}.part")
+    temporary.unlink(missing_ok=True)
+    request = urllib.request.Request(item["url"], headers={"User-Agent": "SDOH-reproduction/1"})
+    last_error: Exception | None = None
+    for attempt in range(1, 4):
+        try:
+            print(f"Downloading pinned public reference: {destination.name} (attempt {attempt}/3)", flush=True)
+            with urllib.request.urlopen(request, timeout=120) as response, temporary.open("wb") as out:
+                while chunk := response.read(1024 * 1024):
+                    out.write(chunk)
+            if not valid_file(temporary, item):
+                raise ValueError(f"checksum or byte-size mismatch for {item['local_filename']}")
+            temporary.replace(destination)
+            log_cache(source_id, item["local_filename"], "downloaded")
+            return
+        except (OSError, urllib.error.URLError, ValueError) as exc:
+            last_error = exc
+            temporary.unlink(missing_ok=True)
+            if attempt < 3:
+                time.sleep(2 ** (attempt - 1))
+    raise RuntimeError(f"Failed to retrieve verified source {source_id}: {last_error}")
+
+
+def atomic_csv(frame: pd.DataFrame, destination: Path) -> None:
+    temporary = destination.with_name(f".{destination.name}.part")
+    frame.to_csv(temporary, index=False)
+    temporary.replace(destination)
+
+
+def load_sources(path: Path) -> tuple[dict, dict]:
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    by_id = {item["id"]: item for item in manifest["sources"]}
+    try:
+        return by_id["acag_pm25_v5na05"], by_id["zcta_boundaries_2020"]
+    except KeyError as exc:
+        raise ValueError(f"Source manifest is missing {exc.args[0]}") from exc
 
 
 def netcdf_raster(path: Path):
@@ -88,8 +111,6 @@ def netcdf_raster(path: Path):
 
 def aggregate_year(path: Path, polygons: gpd.GeoDataFrame) -> pd.DataFrame:
     values, lat, profile = netcdf_raster(path)
-    # cos(latitude) corrects the longitude-width component of geographic cell
-    # area. exactextract then multiplies these weights by polygon coverage.
     area_weights = np.repeat(np.cos(np.deg2rad(lat)).astype("float32")[:, None], values.shape[1], axis=1)
     with MemoryFile() as value_memory, MemoryFile() as weight_memory:
         with value_memory.open(**profile) as value_ds, weight_memory.open(**profile) as weight_ds:
@@ -97,8 +118,8 @@ def aggregate_year(path: Path, polygons: gpd.GeoDataFrame) -> pd.DataFrame:
             weight_ds.write(area_weights, 1)
             result = exact_extract(
                 RasterioRasterSource(value_ds), polygons, ["weighted_mean"],
-                weights=RasterioRasterSource(weight_ds),
-                include_cols=["ZCTA5CE20"], output="pandas", strategy="feature-sequential",
+                weights=RasterioRasterSource(weight_ds), include_cols=["ZCTA5CE20"],
+                output="pandas", strategy="feature-sequential",
             )
     return result.rename(columns={"weighted_mean": "pm25"})
 
@@ -107,19 +128,16 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--reference-dir", required=True, type=Path)
     parser.add_argument("--derived-dir", required=True, type=Path)
+    parser.add_argument("--manifest", required=True, type=Path)
     args = parser.parse_args()
-    pm_dir = args.reference_dir / "pm25"
-    pm_dir.mkdir(parents=True, exist_ok=True)
+    pm_source, boundary_source = load_sources(args.manifest)
+    args.reference_dir.mkdir(parents=True, exist_ok=True)
     args.derived_dir.mkdir(parents=True, exist_ok=True)
 
-    for year, (file_id, filename) in PM25_FILES.items():
-        url = (
-            "https://wustl.app.box.com/index.php?rm=box_download_shared_file"
-            f"&shared_name={PM25_SHARED_NAME}&file_id=f_{file_id}"
-        )
-        download(url, pm_dir / filename)
-    boundary = args.reference_dir / ZCTA_NAME
-    download(ZCTA_URL, boundary)
+    for item in pm_source["files"]:
+        download_verified(pm_source["id"], item, args.reference_dir / item["local_filename"])
+    boundary = args.reference_dir / boundary_source["local_filename"]
+    download_verified(boundary_source["id"], boundary_source, boundary)
 
     linkage = pd.read_csv(args.derived_dir / "zip-zcta-linkage-private.csv", dtype=str)
     requested = set(linkage["zcta_current"].dropna().str.zfill(5))
@@ -132,18 +150,17 @@ def main() -> int:
         print(f"Warning: {len(missing_shapes)} linked ZCTAs lack a 2020 boundary.", file=sys.stderr)
 
     annual_frames = []
-    for year, (_, filename) in sorted(PM25_FILES.items()):
-        print(f"Area-weighting ACAG PM2.5 for {year}", flush=True)
-        frame = aggregate_year(pm_dir / filename, polygons)
-        frame["year"] = year
+    for item in sorted(pm_source["files"], key=lambda value: value["year"]):
+        print(f"Area-weighting ACAG PM2.5 for {item['year']}", flush=True)
+        frame = aggregate_year(args.reference_dir / item["local_filename"], polygons)
+        frame["year"] = item["year"]
         annual_frames.append(frame)
     annual = pd.concat(annual_frames, ignore_index=True)
     annual = annual.rename(columns={"ZCTA5CE20": "zcta"})[["zcta", "year", "pm25"]]
-    annual.to_csv(args.derived_dir / "pm25-zcta-annual.csv", index=False)
+    atomic_csv(annual, args.derived_dir / "pm25-zcta-annual.csv")
 
     summary = annual.groupby("zcta", as_index=False).agg(
-        pm25_2012_2022_zcta=("pm25", "mean"),
-        pm25_variability=("pm25", "std"),
+        pm25_2012_2022_zcta=("pm25", "mean"), pm25_variability=("pm25", "std"),
         pm25_years_available=("pm25", "count"),
     )
     recent = annual[annual["year"].between(2018, 2022)].groupby("zcta")["pm25"].mean()
@@ -152,12 +169,12 @@ def main() -> int:
     out = pd.DataFrame({"study_id": linkage["study_id"]})
     for column in ["pm25_2012_2022_zcta", "pm25_recent_mean", "pm25_variability", "pm25_years_available"]:
         out[column] = linkage["zcta_current"].map(lookup[column])
-    out.to_csv(args.derived_dir / "context-pm25.csv", index=False)
+    atomic_csv(out, args.derived_dir / "context-pm25.csv")
 
-    manifest_rows = []
-    for year, (_, filename) in sorted(PM25_FILES.items()):
-        manifest_rows.append({"year": year, "filename": filename, "sha256": sha256(pm_dir / filename)})
-    pd.DataFrame(manifest_rows).to_csv(pm_dir / "annual-file-checksums.csv", index=False)
+    checksums = [{"year": item["year"], "filename": item["local_filename"],
+                  "sha256": sha256(args.reference_dir / item["local_filename"])}
+                 for item in pm_source["files"]]
+    atomic_csv(pd.DataFrame(checksums), args.reference_dir / "pm25" / "annual-file-checksums.csv")
     print(f"PM2.5 linkage complete for {out['pm25_2012_2022_zcta'].notna().sum()} participants.")
     return 0
 

@@ -23,7 +23,7 @@ the general analysis master.
 | `ruca_category` | RUCA class | USDA ERS 2020 | ZIP → current ZIP | Official primary-code groups: metropolitan 1–3, micropolitan 4–6, small town 7–9, rural 10 | Descriptive primary rurality category | Not relabeled as urban/suburban/rural |
 | `risk_low_social_capital` | Low connectedness risk | Project transform | Participant-linked context | Negative of `z_economic_connectedness` | Higher = lower connectedness; composite component | Explicit reversal; source variable is retained |
 | `env_burden_simple` | Preliminary environmental burden | Project composite | Participant-linked context | Equal-weight mean of `z_sdi`, `z_pm25`, `z_gini`, and low connectedness; requires ≥3 | Higher = more burden; exploratory secondary | Does not include ADI or crime and does not replace individual exposures |
-| `adi_zcta_proxy` | ADI sensitivity | Not generated | Would require block group → ZCTA | Preferred population-weighted aggregation | Exploratory only | ZIP/ZCTA ADI is not a validated Neighborhood Atlas use; credentialed data and defensible weights required |
+| `adi_zcta_proxy` | ADI sensitivity | Not generated | Would require block group → ZCTA | Preferred population-weighted aggregation | Exploratory only | ZIP/ZCTA is not an intended Neighborhood Atlas geography; credentialed data and defensible weights required |
 | crime/disorder | Neighborhood crime/disorder | No linked source | — | Source audit only | Conceptually core, unavailable | No consistent national contemporary ZIP/ZCTA product identified |
 
 Standardized variables are calculated within the N=709 linked analysis sample.

@@ -6,10 +6,9 @@ d$age_c <- d$demo_yrs-mean(d$demo_yrs,na.rm=TRUE)
 d$ecog_c <- d$ecog_total-mean(d$ecog_total,na.rm=TRUE)
 d$mspss_c <- d$mspss_total-mean(d$mspss_total,na.rm=TRUE)
 fig_dir <- file.path(derived_dir(),"figures")
-dir.create(fig_dir,recursive=TRUE,showWarnings=FALSE)
-# This directory contains generated derivatives only. Remove stale PNGs so the
-# index and directory always describe the same reproducible 11-figure menu.
-unlink(list.files(fig_dir,pattern="\\.png$",full.names=TRUE))
+fig_staging <- file.path(derived_dir(),".figures-building")
+unlink(fig_staging,recursive=TRUE,force=TRUE)
+dir.create(fig_staging,recursive=TRUE,showWarnings=FALSE)
 index <- list()
 mode_value <- function(x) names(which.max(table(x)))[1]
 
@@ -35,7 +34,7 @@ save_main <- function(exposure,outcome,xlabel,ylabel,filename,title,classificati
     ggplot2::geom_line(data=grid,ggplot2::aes(x=.data[[exposure]],y=.data$fit),inherit.aes=FALSE,color="#8b1e3f",linewidth=1.05)+
     ggplot2::labs(x=xlabel,y=ylabel,title=title,subtitle=paste0("Adjusted prediction with 95% CI; N = ",nrow(dat)))+
     ggplot2::theme_minimal(base_size=12)+ggplot2::theme(plot.title=ggplot2::element_text(face="bold"))
-  ggplot2::ggsave(file.path(fig_dir,filename),p,width=7,height=5,dpi=300)
+  ggplot2::ggsave(file.path(fig_staging,filename),p,width=7,height=5,dpi=300)
   index[[length(index)+1L]] <<- list(filename=filename,title=title,model=deparse(stats::formula(fit)),N=nrow(dat),classification=classification,
     caveat="Cross-sectional current-ZIP association; prediction fixes age at its mean and categorical covariates at modal levels.")
   TRUE
@@ -62,9 +61,9 @@ save_interaction <- function(exposure,moderator,outcome,xlabel,moderator_label,y
     ggplot2::labs(x=xlabel,y=ylabel,color=moderator_label,fill=moderator_label,title=title,
       subtitle=paste0("Adjusted predictions at mean and ±1 SD; 95% CIs; N = ",nrow(dat)))+
     ggplot2::theme_minimal(base_size=12)+ggplot2::theme(plot.title=ggplot2::element_text(face="bold"),legend.position="bottom")
-  ggplot2::ggsave(file.path(fig_dir,filename),p,width=7.3,height=5.2,dpi=300)
+  ggplot2::ggsave(file.path(fig_staging,filename),p,width=7.3,height=5.2,dpi=300)
   index[[length(index)+1L]] <<- list(filename=filename,title=title,model=deparse(stats::formula(fit)),N=nrow(dat),classification=classification,
-    caveat="Cross-sectional interaction; moderator values are descriptive and were prespecified, not chosen from p-values.")
+    caveat="Cross-sectional interaction; moderator values are fixed descriptive values and were not chosen from p-values.")
   TRUE
 }
 
@@ -80,9 +79,14 @@ save_interaction("z_sdi","age_c","fevs_total","SDI (standardized)","Age","Predic
 save_interaction("z_sdi","ecog_c","oafem_weighted_total","SDI (standardized)","eCog","Predicted weighted OAFEM","10-sdi-ecog-oafem.png","Cognitive vulnerability within socially deprived contexts","PRIMARY GRANT-ALIGNED")
 save_interaction("z_economic_connectedness","mspss_c","fevs_total","Economic connectedness (standardized)","MSPSS","Predicted FEVS","11-economic-connectedness-mspss-fevs.png","Social support across levels of economic connectedness","PRIMARY GRANT-ALIGNED")
 
+if(length(index) != 11L || length(list.files(fig_staging,pattern="\\.png$")) != 11L) {
+  stop("Figure transaction incomplete; existing figures were left unchanged.")
+}
+unlink(fig_dir,recursive=TRUE,force=TRUE)
+if(!file.rename(fig_staging,fig_dir)) stop("Could not install completed figure directory.")
 lines <- c("# Private draft figure index","",
-  "Eleven figures were selected from prespecified scientific questions, not from p-values. Files remain private.","")
+  "Eleven figures represent the fixed, grant-driven analysis framework and were not selected from p-values. Files remain private.","")
 for(x in index) lines <- c(lines,paste0("## `",x$filename,"`"),"",paste0("- Title: ",x$title),paste0("- Model: `",x$model,"`"),
   paste0("- N: ",x$N),paste0("- Classification: ",x$classification),paste0("- Caveat: ",x$caveat),"")
-writeLines(lines,file.path(derived_dir(),"figure-index.md"))
+atomic_write_lines(lines,file.path(derived_dir(),"figure-index.md"))
 cat("Generated ",length(index)," private draft figures.\n",sep="")

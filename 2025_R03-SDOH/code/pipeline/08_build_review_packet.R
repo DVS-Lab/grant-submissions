@@ -34,7 +34,7 @@ family_n <- aggregate(N~family,r[r$status=="RUN",],function(x)paste0(min(x),"–
 family_table <- merge(family_counts,family_n,by="family",all.x=TRUE)
 
 audit <- c("# Fixed grant results audit","",
-  "This audit covers the complete prespecified framework. It is not a significance-filtered list. Coefficients for continuous core exposures use one-SD exposure increments unless a model is explicitly labeled raw-unit.","",
+  "This audit covers the complete fixed, grant-driven analysis framework. It is not a significance-filtered list. Coefficients for continuous core exposures use one-SD exposure increments unless a model is explicitly labeled raw-unit.","",
   paste0("- Model specifications: ",nrow(spec),"; successfully fitted: ",length(unique(r$model_id[r$status=="RUN"])),"."),
   paste0("- Coefficient rows: ",nrow(r),"."),
   "- Common adjustment: centered age, gender, household-income category, and education category.",
@@ -64,7 +64,7 @@ audit <- c(audit,"",
   paste0("- eCog was also associated with lifetime loss (",or_text(ecog_fl),") and 12-month loss (",or_text(ecog_f12),")."),
   "- Selected context × eCog interactions were mixed; SDI × eCog for OAFEM did not have a clearly bounded-away-from-zero interval.","",
   "## Family F — social-resource buffering","",
-  paste0("- Prespecified MSPSS interactions did not yield a simple uniform buffering story. The SDI × MSPSS estimate for SUSD depression was positive (",beta_text(sdi_support_dep),") and requires interpretation rather than a protective label."),
+  paste0("- Fixed MSPSS interactions did not yield a simple uniform buffering story. The SDI × MSPSS estimate for SUSD depression was positive (",beta_text(sdi_support_dep),") and requires interpretation rather than a protective label."),
   "- Selected loneliness and Need-to-Belong interactions were retained as secondary diagnostics and should not displace the MSPSS total analysis.","",
   "## Family G — residence-duration validity","",
   paste0("- SDI–OAFEM remained positive among residents of at least six years: ",beta_text(sdi_oafem_ge6),"."),
@@ -74,7 +74,7 @@ audit <- c(audit,"",
   "- Economic connectedness and high-SES exposure are highly correlated, and SDI is strongly inversely related to economic connectedness.",
   "- ADI and crime/disorder are absent for defensible access/geography reasons; the exploratory burden composite therefore uses four available domains.",
   "- These preliminary models estimate associations, not causal environmental effects.")
-writeLines(audit,file.path(derived_dir(),"grant-results-audit.md"))
+atomic_write_lines(audit,file.path(derived_dir(),"grant-results-audit.md"))
 
 findings <- c("# Grant candidate findings","",
   "These candidates were selected for grant alignment, interpretability, precision, and consistency across planned variants—not merely by smallest p-value.","",
@@ -91,7 +91,7 @@ findings <- c("# Grant candidate findings","",
   "8. **Environmental context and FEVS/eCog/mood.** Most adjusted main effects were small with intervals spanning zero. This constrains a broad claim that every contextual burden maps onto every vulnerability domain.","",
   "## NOT WORTH PURSUING","",
   "- Exhaustively crossing all Social Capital Atlas columns with all PROMIS domains, mining alternative PM2.5 windows, or elevating gambling outcomes solely because they are available. Those paths would dilute the grant story.")
-writeLines(findings,file.path(derived_dir(),"grant-candidate-findings.md"))
+atomic_write_lines(findings,file.path(derived_dir(),"grant-candidate-findings.md"))
 
 inventory <- c("# Context candidate inventory","",
   "## CORE","",
@@ -104,14 +104,14 @@ inventory <- c("# Context candidate inventory","",
   "- An explicitly labeled population-weighted `adi_zcta_proxy` only if credentialed block-group ADI and defensible block-group-to-ZCTA population weights become available.","",
   "## NOT CURRENTLY WORTH ADDING","",
   "- Additional pollution windows, centroid-only exposures, opaque commercial neighborhood scores, locally restricted crime indices, or broad transportation/health-access screens without a specific grant hypothesis.")
-writeLines(inventory,file.path(derived_dir(),"context-candidate-inventory.md"))
+atomic_write_lines(inventory,file.path(derived_dir(),"context-candidate-inventory.md"))
 
 unused <- c("# Unused-measures opportunity review","",
   "## ADD TO CORE ANALYSES","",
   "- CTB: directly extends the lab's PM2.5 decision-process work.",
   "- PROMIS depression, anxiety, physical function, pain interference, sleep disturbance, and social roles: concept-prioritized Family B outcomes.",
   "- Residence duration: required validity sensitivity for all current-ZIP exposures.",
-  "- MSPSS total, UCLA loneliness, and Need to Belong: prespecified social-resource/susceptibility moderators.","",
+  "- MSPSS total, UCLA loneliness, and Need to Belong: documented social-resource/susceptibility moderators.","",
   "## SECONDARY / SENSITIVITY","",
   "- MSPSS subscales: inspect only with an a priori relational-source hypothesis or after a total-score result warrants decomposition.",
   "- Home ownership, household composition, caregiving, and occupational status: plausible susceptibility/context descriptors, but adding them to the compact adjustment set risks construct overcontrol or sparse categories.",
@@ -120,7 +120,7 @@ unused <- c("# Unused-measures opportunity review","",
   "## NOT USEFUL FOR THIS GRANT","",
   "- Gambling screens, substance screens, administrative payment preferences, and platform fields. They do not materially strengthen the five specified grant stories in this pass.",
   "- Historical measures absent from the N=709 instrument (BIS/BAS, DOSPERT, GSAS, Planfulness) cannot be analyzed and should not drive new data archaeology.")
-writeLines(unused,file.path(derived_dir(),"unused-measures-review.md"))
+atomic_write_lines(unused,file.path(derived_dir(),"unused-measures-review.md"))
 
 context_lines <- vapply(seq_len(nrow(context)),function(i) paste0("- `",context$variable[i],"`: ",context$N_matched[i],"/709 matched (",context$percent_matched[i],"%); range ",context$minimum[i],"–",context$maximum[i],"."),character(1))
 history_formula <- aggregate(status~model_formula,history,function(x)if(any(x=="RERUN"))"RERUN" else "NOT RUNNABLE")
@@ -129,7 +129,7 @@ packet <- c("# Melanie review packet","",
   "## 1. Dataset and scoring status","",
   paste0("- Analysis master: ",nrow(d)," rows × ",ncol(d)," columns; `study_id` unique; current/childhood ZIP excluded."),
   "- OAFEM: all 30 stems uniquely mapped to the published short form; 0/1/2 responses and explicit 1/2/3 severity weights; sum of rated items; item count retained.",
-  "- PROMIS: Profile v2.0 confirmed; reverse directions handled for refreshing sleep and social-role trouble items; official raw-sum T scores for seven domains.",
+  "- PROMIS: Profile v2.0 implementation checked by automated contracts; reverse directions handled for refreshing sleep and social-role trouble items; official raw-sum T scores for seven domains.",
   "- CTB: 24/24 option strings mapped to 1–6 for all 709 participants; higher means more delayed allocation.",
   "- Fraud: lifetime and past-12-month bands plus any-loss indicators; categories are not dollars.",
   "- Blank/whitespace/NA-text categorical values are normalized before modeling.","",
@@ -154,7 +154,7 @@ packet <- c("# Melanie review packet","",
   "- Economic connectedness and high-SES exposure: r = 0.928 (|r|≥.85).",
   "- See `context-correlation.csv`, `context-correlation-flags.csv`, and `context-correlation.png`. Do not automatically combine these measures.","",
   "## 5. Fixed-analysis overview","",
-  paste0("- ",nrow(spec)," prespecified specifications ran successfully across Families A–G plus labeled sensitivities; no p-value-driven model selection."),
+  paste0("- ",nrow(spec)," fixed, grant-driven specifications ran successfully across Families A–G plus labeled sensitivities; no p-value-driven model selection."),
   "- Continuous outcomes: linear primary models. Fraud any loss: logistic models with ORs/CIs. Fraud bands: proportional-odds sensitivities. OAFEM: linear plus log1p and quasi-Poisson sensitivities.",
   "- Exposures are standardized for comparable core effects; raw-unit adjusted models are retained. Interactions use centered continuous moderators.",
   paste0("- Historical screen: ",sum(history_formula$status=="RERUN"),"/35 formulas now run. The other ",sum(history_formula$status!="RERUN")," require the unknown `minority` recode; it was not invented."),"",
@@ -221,5 +221,5 @@ packet <- c(packet,"",
   "- `unused-measures-review.md` and `context-candidate-inventory.md`: disciplined opportunity audits.",
   "- `figure-index.md` and `figures/`: 11-model visual menu.",
   "- `crime-source-audit.md` and `adi-proxy-status.md`: exact reasons those constructs remain scientific/access decisions.")
-writeLines(packet,file.path(derived_dir(),"melanie-review-packet.md"))
+atomic_write_lines(packet,file.path(derived_dir(),"melanie-review-packet.md"))
 message("Built private results audit, candidate findings, opportunity audits, and Melanie review packet.")

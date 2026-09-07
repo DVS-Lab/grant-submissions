@@ -38,4 +38,4 @@ pm25_2012_2022_zcta,Area-weighted current-ZCTA PM2.5 mean for 2012-2022,,Microgr
 socialcap_economic_connectedness,Opportunity Insights ZIP economic connectedness,,Higher indicates more cross-SES connectedness
 gini_zcta,ACS 2024 five-year B19083 ZCTA Gini,,0-1; higher indicates more inequality
 ruca_primary,USDA ERS 2020 primary RUCA ZIP code,,1-10
-env_burden_simple,Exploratory equal-weight environmental-burden composite,,Higher indicates more burden; requires at least three prespecified components
+env_burden_simple,Exploratory equal-weight environmental-burden composite,,Higher indicates more burden; requires at least three fixed documented components

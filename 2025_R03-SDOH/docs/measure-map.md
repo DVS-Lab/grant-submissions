@@ -19,16 +19,16 @@ been approved.
 | Need to Belong | `ntb_1`–`ntb_10` (10) | None | `ntb_total`, `ntb_mean` | **Verified** | CORE/POSSIBLY RELEVANT moderator. Standard 1–5 mapping; items 1, 3, and 7 reverse-scored. No legacy block exists. |
 | PROMIS-29 Profile v2.0 | `promis_adult_1`–`promis_adult_29` (29) | None | seven raw domains, seven official T scores, pain intensity | **Verified** | CORE health outcomes. Refreshing sleep and four social-role trouble items are direction-corrected. Higher physical/social-role T = better function; higher symptom T = more burden. No global PROMIS total. |
 | Actual fraud/loss | `fraud_adult_1`, `fraud_adult_2` | None | `fraud_lifetime_band/any`; `fraud_12mo_band/any` | **Verified** | CORE outcomes. Private item text proves lifetime versus past-12-month loss. Bands are categorical, not exact dollars. |
-| Age | `demo_yrs` | None | `demo_yrs` | **Validated field** | CORE covariate. |
-| Gender / sex assigned at birth | `demo_gender`, `demo_sab` | None | unchanged private categorical fields | **Validated fields** | CORE covariates; keep constructs distinct. |
-| Race / ethnicity | `demo_race`, `demo_eth` | None | unchanged private categorical fields | **Validated fields** | CORE covariates. A legacy numeric White/non-White recode is not applied to the current text-labelled source. |
-| Education | `ses_edu`, `ses_yoe` | None | unchanged private fields | **Validated fields** | CORE SES. |
-| Household/personal income | `ses_thi`, `ses_tpi` | None | unchanged private categorical fields | **Validated fields** | CORE SES. |
-| Home ownership / household resources | `ses_rentown`, `ses_hhr` | None | unchanged private fields | **Validated fields** | CORE SES. |
-| Urban/suburban/rural | `demo_quota` | None | unchanged private category | **Validated survey field** | CORE/POSSIBLY RELEVANT. This is not a reproduced geographic rurality lookup. |
+| Age | `demo_yrs` | None | `demo_yrs` | **Checked field** | CORE covariate. |
+| Gender / sex assigned at birth | `demo_gender`, `demo_sab` | None | unchanged private categorical fields | **Checked fields** | CORE covariates; keep constructs distinct. |
+| Race / ethnicity | `demo_race`, `demo_eth` | None | unchanged private categorical fields | **Checked fields** | CORE covariates. A legacy numeric White/non-White recode is not applied to the current text-labelled source. |
+| Education | `ses_edu`, `ses_yoe` | None | unchanged private fields | **Checked fields** | CORE SES. |
+| Household/personal income | `ses_thi`, `ses_tpi` | None | unchanged private categorical fields | **Checked fields** | CORE SES. |
+| Home ownership / household resources | `ses_rentown`, `ses_hhr` | None | unchanged private fields | **Checked fields** | CORE SES. |
+| Urban/suburban/rural | `demo_quota` | None | unchanged private category | **Checked survey field** | CORE/POSSIBLY RELEVANT. This is not a reproduced geographic rurality lookup. |
 | Current ZIP | `demo_zip_prim` | None | excluded | **Private linkage input** | CORE linkage priority; never written to the general analysis master. |
 | Childhood ZIP | `demo_zip_child` | None | excluded | **Private linkage input** | Secondary linkage input. |
-| Residence duration | `demo_zip_prim_yr` | None | unchanged private field | **Validated field** | CORE/POSSIBLY RELEVANT. Despite its name, this is duration rather than ZIP. |
+| Residence duration | `demo_zip_prim_yr` | None | unchanged private field | **Checked field** | CORE/POSSIBLY RELEVANT. Despite its name, this is duration rather than ZIP. |
 
 ## Other measures and batteries
 

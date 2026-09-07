@@ -1,6 +1,6 @@
 # SDOH analysis status
 
-## Complete and validated
+## Automated in the reproducible working pipeline
 
 - The private authoritative workbook contains 709 unique retained participants;
   attention-check and `gc` validation introduce no new exclusion.
@@ -21,7 +21,7 @@
   ACS 2024 five-year B19083 Gini, and USDA 2020 RUCA. ZIP/ZCTA are excluded from
   the 709-row private analysis master.
 - Exposures retain raw and standardized forms; a secondary equal-weight burden
-  composite requires at least three of four prespecified adversity domains.
+  composite requires at least three of four fixed, documented adversity domains.
 - The private exposure-correlation audit flags |r| ≥ .70 and ≥ .85.
 - All 216 fixed Family A–G model specifications run, including raw/standardized
   effects, logistic/ordinal fraud models, OAFEM sensitivities, centered
@@ -40,7 +40,7 @@
   consistent contemporary national ZIP/ZCTA product; coarser FBI/UCR or
   tract-level academic alternatives require a substantive tradeoff decision.
 
-## Scientific review still required
+## Independent scientific validation still required
 
 - Approve or request a targeted sensitivity for area- versus population-weighted
   PM2.5, ADI proxy feasibility, crime geography, exposure vintages, and the
@@ -48,6 +48,10 @@
 - Evaluate candidate findings and important nulls without causal language;
   choose only scientifically motivated follow-ups.
 - Select/refine 2–4 of the 11 private figures and write the final two-page report.
+
+The unchecked review worksheet is `independent-validation-checklist.md`; planned
+scientific extensions that were deliberately not run are in
+`planned-analyst-extensions.md`.
 
 Current participant-level data, linked context, results, audits, and figures
 remain under ignored `private-data/` and must not be committed.

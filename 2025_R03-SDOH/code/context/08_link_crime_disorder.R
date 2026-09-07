@@ -13,5 +13,5 @@ lines <- c(
   "",
   "Do not add a misleading ZIP crime score. If crime/disorder is essential for the grant, Melanie should choose between a county-level FBI/UCR sensitivity exposure (with explicit reporting-coverage diagnostics) and a vetted tract-level academic product after determining whether the loss of geographic/temporal comparability is scientifically acceptable."
 )
-writeLines(lines, context_file("crime-source-audit.md"))
+atomic_write_lines(lines, context_file("crime-source-audit.md"))
 message("Completed crime/disorder source audit; no defensible national ZIP measure was forced into the pipeline.")

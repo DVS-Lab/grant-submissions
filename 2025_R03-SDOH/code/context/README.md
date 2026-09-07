@@ -1,6 +1,6 @@
 # ZIP/ZCTA context pipeline
 
-This directory implements the ignored private linkage from participant-reported current ZIP to public ZIP/ZCTA context measures. `00_prepare_context_sources.R` caches tabular sources; scripts `01`–`08` validate/link ZIP/ZCTA, Social Capital Atlas, SDI, ACS Gini, ACAG PM2.5, RUCA, and the crime-source decision; `09_build_context_master.R` removes geographic identifiers, standardizes exposures, creates the prespecified exploratory burden composite, and audits correlations; `10_validate_context.R` produces aggregate coverage/range checks and the private SHA256 source manifest.
+This directory implements the ignored private linkage from participant-reported current ZIP to public ZIP/ZCTA context measures. `00_prepare_context_sources.R` downloads checksum-verified entries from the public `config/reproducibility-sources.json` authority; scripts `01`–`08` validate/link ZIP/ZCTA, Social Capital Atlas, SDI, fixed-vintage ACS Gini, ACAG PM2.5, RUCA, and the crime-source decision; `09_build_context_master.R` removes geographic identifiers, standardizes exposures, creates the exploratory burden composite, and audits correlations; `10_validate_context.R` produces aggregate coverage/range checks and the private realized source manifest.
 
 Current ZIP is the primary linkage. Childhood ZIP is processed only to report feasibility. Contemporary context estimates must not be described as historical childhood exposure.
 

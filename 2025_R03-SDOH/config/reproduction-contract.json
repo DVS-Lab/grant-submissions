@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "source_workbook": {"worksheets": 1, "rows": 709, "columns": 300},
+  "analysis_master": {"rows": 709, "columns": 91},
+  "scores": {
+    "fevs_total": 709,
+    "ecog_total": 701,
+    "oafem_weighted_total": 702,
+    "ctb_mean": 709,
+    "promis_physical_function_t": 709,
+    "promis_anxiety_t": 709,
+    "promis_depression_t": 709,
+    "promis_fatigue_t": 709,
+    "promis_sleep_disturbance_t": 709,
+    "promis_social_roles_t": 709,
+    "promis_pain_interference_t": 709
+  },
+  "geography": {"valid_current_zip": 708, "matched_current_zcta": 706},
+  "exposures": {
+    "sdi_zcta": 706,
+    "pm25_2012_2022_zcta": 700,
+    "socialcap_economic_connectedness": 671,
+    "socialcap_high_ses_exposure": 666,
+    "gini_zcta": 705,
+    "ruca_primary": 706,
+    "env_burden_simple": 704
+  },
+  "historical_models": {"total_formulas": 35, "runnable_formulas": 17},
+  "grant_framework": {"model_specifications": 216, "required_status": "RUN"},
+  "figures": {"png_files": 11},
+  "required_private_outputs": [
+    "analysis-master.csv", "core-scores.csv", "score-validation.csv",
+    "current-zip-context.csv", "grant-model-specifications.csv",
+    "grant-candidate-results.csv", "model-screen-rerun.csv",
+    "context-linkage-audit.md", "melanie-review-packet.md", "figure-index.md"
+  ]
+}

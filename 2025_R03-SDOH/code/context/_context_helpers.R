@@ -35,7 +35,7 @@ numeric_columns <- function(d, columns) {
 }
 
 write_context_csv <- function(d, name) {
-  utils::write.csv(d, context_file(name), row.names = FALSE, na = "")
+  atomic_write_csv(d, context_file(name))
   invisible(context_file(name))
 }
 
@@ -45,6 +45,71 @@ sha256 <- function(path) {
     stop("Could not calculate SHA256 for ", path)
   }
   sub("[[:space:]].*$", "", line[[1]])
+}
+
+source_manifest <- function() {
+  if (!requireNamespace("jsonlite", quietly = TRUE)) stop("Package 'jsonlite' is required.")
+  path <- file.path(project_root(), "config", "reproducibility-sources.json")
+  jsonlite::fromJSON(path, simplifyVector = FALSE)$sources
+}
+
+source_entry <- function(id) {
+  entries <- source_manifest()
+  hits <- vapply(entries, function(x) identical(x$id, id), logical(1))
+  if (sum(hits) != 1L) stop("Expected exactly one source-manifest entry for ", id, ".")
+  entries[[which(hits)]]
+}
+
+cache_event <- function(id, filename, action) {
+  path <- Sys.getenv("SDOH_CACHE_LOG", unset = "")
+  if (!nzchar(path)) return(invisible(NULL))
+  line <- paste(id, filename, action, sep = "\t")
+  cat(line, "\n", file = path, append = TRUE, sep = "")
+  invisible(NULL)
+}
+
+download_verified <- function(entry, destination = file.path(reference_dir(), entry$local_filename)) {
+  expected_bytes <- as.numeric(entry$bytes)
+  valid <- file.exists(destination) &&
+    identical(unname(file.info(destination)$size), expected_bytes) &&
+    identical(tolower(sha256(destination)), tolower(entry$sha256))
+  if (valid) {
+    cache_event(entry$id, entry$local_filename, "reused")
+    validate_tabular_source(entry, destination)
+    return(invisible(destination))
+  }
+  dir.create(dirname(destination), recursive = TRUE, showWarnings = FALSE)
+  temporary <- paste0(destination, ".part")
+  on.exit(unlink(temporary), add = TRUE)
+  status <- system2("curl", c(
+    "--fail", "--location", "--retry", "3", "--retry-all-errors",
+    "--connect-timeout", "30", "--max-time", "900",
+    "--output", shQuote(temporary), shQuote(entry$url)
+  ))
+  if (!identical(status, 0L)) stop("Download failed for public source ", entry$id, ".")
+  actual_bytes <- unname(file.info(temporary)$size)
+  actual_sha <- sha256(temporary)
+  if (!identical(actual_bytes, expected_bytes) || !identical(tolower(actual_sha), tolower(entry$sha256))) {
+    stop("Checksum or byte-size mismatch for public source ", entry$id, ".")
+  }
+  if (!file.rename(temporary, destination)) stop("Could not install downloaded source ", entry$id, ".")
+  cache_event(entry$id, entry$local_filename, "downloaded")
+  validate_tabular_source(entry, destination)
+  invisible(destination)
+}
+
+validate_tabular_source <- function(entry, path) {
+  extension <- tolower(tools::file_ext(path))
+  if (!(extension %in% c("csv", "dat")) || is.null(entry$expected_columns)) return(invisible(TRUE))
+  data <- if (extension == "dat") utils::read.delim(path, sep = "|", quote = "", colClasses = "character", check.names = FALSE)
+          else utils::read.csv(path, nrows = if (is.null(entry$expected_rows)) -1L else as.integer(entry$expected_rows) + 1L,
+                               check.names = FALSE, colClasses = "character")
+  missing <- setdiff(unlist(entry$expected_columns), names(data))
+  if (length(missing)) stop("Public source ", entry$id, " is missing expected column(s): ", paste(missing, collapse = ", "))
+  if (!is.null(entry$expected_rows) && nrow(data) != as.integer(entry$expected_rows)) {
+    stop("Public source ", entry$id, " has ", nrow(data), " rows; expected ", entry$expected_rows, ".")
+  }
+  invisible(TRUE)
 }
 
 zscore <- function(x) {

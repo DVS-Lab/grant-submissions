@@ -38,7 +38,7 @@ if (sum(s$ctb_trials_answered != 24,na.rm=TRUE) != 0L) stop("At least one CTB re
 if (any(vapply(d,function(x)is.character(x)&&any(trimws(x)=="",na.rm=TRUE),logical(1)))) stop("Source normalization left a blank categorical value.")
 
 lines <- c("# Private score validation","",
-  "- Records validated: 709; participant keys unique.",
+  "- Records checked: 709; participant keys unique.",
   "- All listed score definitions and expected-range checks passed.",
   paste0("- OAFEM: 30/30 items map uniquely to published short-form items and explicit severity weights; ",sum(!is.na(s$oafem_weighted_total))," participants scored; observed range ",min(s$oafem_weighted_total,na.rm=TRUE),"–",max(s$oafem_weighted_total,na.rm=TRUE),"."),
   paste0("- OAFEM rated-item distribution: ",paste(names(rated),as.integer(rated),sep=" items=",collapse="; ")," participants."),
@@ -50,5 +50,5 @@ lines <- c("# Private score validation","",
   "- Fraud outputs distinguish lifetime from past-12-month loss and preserve both ordinal bands and binary any-loss indicators; bands are not treated as dollar amounts.",
   "- Source character fields normalize blank, whitespace-only, `NA`, and `N/A` to missing before factor creation.",
   "","See `score-validation.csv` for per-score coverage and ranges.")
-writeLines(lines,file.path(derived_dir(),"score-validation.md"))
-cat("Validated ",nrow(validation)," score definitions/ranges.\n",sep="")
+atomic_write_lines(lines,file.path(derived_dir(),"score-validation.md"))
+cat("Checked ",nrow(validation)," score definitions/ranges.\n",sep="")
