@@ -15,7 +15,7 @@ different source variants or analytic samples. The files are therefore kept
 as three distinct historical references rather than rewritten into a false
 single truth.
 
-These were exploratory models, not preregistered analyses or confirmed
+These were exploratory models, not preregistered analyses or established
 findings. Their value is reconstructing what was tried. The current private
 pipeline deduplicates the 35 formulas, classifies availability, reruns every
 runnable model, and compares direction descriptively without using a p-value
