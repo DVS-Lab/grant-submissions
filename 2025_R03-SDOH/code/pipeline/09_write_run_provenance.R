@@ -13,6 +13,14 @@ cache_log <- Sys.getenv("SDOH_CACHE_LOG", unset = "")
 cache_events <- if (file.exists(cache_log) && file.info(cache_log)$size > 0) {
   utils::read.delim(cache_log, header = FALSE, col.names = c("source_id", "local_filename", "action"), stringsAsFactors = FALSE)
 } else data.frame(source_id = character(), local_filename = character(), action = character())
+if (nrow(cache_events)) {
+  cache_events$priority <- match(cache_events$action, c("downloaded", "reused"))
+  cache_events <- cache_events[order(cache_events$source_id, cache_events$local_filename, cache_events$priority), ]
+  cache_events <- cache_events[!duplicated(paste(cache_events$source_id, cache_events$local_filename)),
+                               c("source_id", "local_filename", "action")]
+}
+realized_manifest <- utils::read.csv(file.path(project_root(), "private-data", "reference", "source-manifest.csv"),
+                                     check.names = FALSE, stringsAsFactors = FALSE)
 git_sha <- system2("git", c("-C", shQuote(project_root()), "rev-parse", "HEAD"), stdout = TRUE)
 platform <- Sys.info()[c("sysname", "release", "machine")]
 record <- list(
@@ -31,6 +39,7 @@ record <- list(
   configuration = list(source_manifest = "config/reproducibility-sources.json",
                        reproduction_contract = "config/reproduction-contract.json",
                        python_lock = "code/context/requirements-lock.txt", R_lock = "renv.lock"),
+  public_sources = realized_manifest,
   public_source_cache = cache_events
 )
 path <- file.path(derived_dir(), "run-provenance.json")

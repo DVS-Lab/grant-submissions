@@ -71,3 +71,7 @@ The cleanup script removes only reconstructable dependency/source caches. It nev
 ## Privacy
 
 Never stage `private-data/`, never use `git add -f` for participant data, and never upload a source workbook, linked ZIP/ZCTA file, or private provenance/results to this public repository. Before sharing code, run `bash 2025_R03-SDOH/scripts/check-public-files.sh`.
+
+## Reference clean-room verification
+
+At commit `5e3a0f5`, a new temporary clone received only the deidentified XLSX. On Apple Silicon macOS it discovered Python 3.13.12, restored the exact Python and R locks, downloaded 17 pinned public files, and passed the full reproduction contract in 221.13 seconds. The resulting rebuildable reference cache was approximately 681 MB and the complete private working directory approximately 688 MB. A second unchanged run reused both environments and all 17 cached source files, passed again in 50.46 seconds, retained exactly 11 figures, and left no partial-download or figure-staging files. Both runs emitted the five documented `glm.fit` numerical-boundary warnings; these are flagged for human statistical review rather than suppressed.
