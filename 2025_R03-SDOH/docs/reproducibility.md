@@ -35,8 +35,10 @@ only the final command.
   prerequisite steps because installing Apple's command-line tools and
   Homebrew may require a GUI confirmation or administrator password.
 - R 4.5.2. On macOS, the helper installs the Homebrew `r-rig` version manager,
-  installs the exact reference R, and selects it. `renv.lock` records exact R
-  package versions; the runner restores them into ignored
+  installs the exact reference R, and locates its executable by the version it
+  reports. This avoids depending on `rig`'s architecture-specific installation
+  name (for example, `4.5-arm64`) or changing the Mac's global default R.
+  `renv.lock` records exact R package versions; the runner restores them into ignored
   `private-data/reference/.r-library`, never the global library.
 - Python 3.11 or newer with `venv`. On macOS, the helper installs Python 3.12 if
   no compatible interpreter exists. The reference run used Python 3.12.14 on
@@ -101,10 +103,13 @@ If automatic exact-R setup alone fails, run:
 ```bash
 brew install r-rig
 rig add 4.5.2
-rig default 4.5.2
-Rscript --version
+rig list
 bash 2025_R03-SDOH/scripts/setup-macos.sh
 ```
+
+`rig list` may name this installation `4.5-arm64` even though it contains R
+4.5.2. Do not run `rig default 4.5.2`; the setup helper finds and uses the exact
+installed executable directly.
 
 ## Expected success
 
@@ -131,6 +136,10 @@ and 11 PNG figures. The authoritative public contract is
   `curl -k` or disable TLS verification.
 - **R or Python unavailable on a Mac:** use `setup-macos.sh`, not the lower-level
   runner. Follow its Homebrew instructions if it cannot install the runtimes.
+- **`rig` says installation succeeded and then says R is not installed:** do not
+  uninstall R. Run `git pull`, then rerun `setup-macos.sh`. The helper checks
+  architecture-specific framework installations directly and does not require
+  `Rscript` to be on `PATH` or R 4.5.2 to be the global default.
 - **Python unavailable on another platform:** install Python 3.11+ with `venv`.
   To use an existing compatible environment, set `SDOH_CONTEXT_PYTHON`; the
   runner verifies it but never modifies it.

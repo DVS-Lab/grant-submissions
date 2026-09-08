@@ -24,7 +24,7 @@ if ! command -v "$public_test_python" >/dev/null 2>&1 && [[ ! -x "$public_test_p
   exit 1
 fi
 if ! command -v "$rscript_command" >/dev/null 2>&1 && [[ ! -x "$rscript_command" ]]; then
-  printf 'ERROR: Rscript is required. On macOS, run bash 2025_R03-SDOH/scripts/setup-macos.sh to install and select reference R 4.5.2.\n' >&2
+  printf 'ERROR: Rscript is required. On macOS, run bash 2025_R03-SDOH/scripts/setup-macos.sh to install and locate reference R 4.5.2.\n' >&2
   exit 1
 fi
 active_r_version=$("$rscript_command" -e 'cat(as.character(getRversion()))' 2>/dev/null || true)

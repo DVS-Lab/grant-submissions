@@ -39,12 +39,16 @@ def main() -> int:
         'reference_r_version="4.5.2"',
         'install r-rig',
         'add "$reference_r_version"',
-        'default "$reference_r_version"',
+        'find_reference_rscript',
+        'candidate_version=$(r_version_for "$candidate_path"',
+        '/Library/Frameworks/R.framework/Versions/*/Resources/bin/Rscript',
         'install python@3.12',
     ):
         require(required_fragment in mac_setup, f"macOS setup contract missing: {required_fragment}")
     require("this script will not overwrite it" in mac_setup,
             "macOS setup must not overwrite a different private workbook")
+    require('default "$reference_r_version"' not in mac_setup,
+            "macOS setup must not address rig installations by patch-version name")
 
     oafem = csv_rows(project / "docs/oafem-item-map.csv")
     require(len(oafem) == 30, "OAFEM map must have 30 rows")

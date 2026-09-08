@@ -46,6 +46,33 @@ command_path() {
   command -v "$candidate" 2>/dev/null
 }
 
+r_version_for() {
+  local candidate=$1
+  "$candidate" -e 'cat(as.character(getRversion()))' 2>/dev/null
+}
+
+find_reference_rscript() {
+  local candidate candidate_path candidate_version
+  for candidate in \
+    "${SDOH_RSCRIPT:-}" \
+    Rscript \
+    /Library/Frameworks/R.framework/Versions/*/Resources/bin/Rscript \
+    "$HOME"/.local/share/rig/r/*/Resources/bin/Rscript \
+    "$HOME"/.local/share/rig/r/*/bin/Rscript \
+    /usr/local/bin/Rscript-* \
+    /opt/homebrew/bin/Rscript-*; do
+    [[ -n "$candidate" ]] || continue
+    candidate_path=$(command_path "$candidate" || true)
+    [[ -n "$candidate_path" ]] || continue
+    candidate_version=$(r_version_for "$candidate_path" || true)
+    if [[ "$candidate_version" == "$reference_r_version" ]]; then
+      printf '%s\n' "$candidate_path"
+      return 0
+    fi
+  done
+  return 1
+}
+
 find_brew() {
   local candidate
   for candidate in brew /opt/homebrew/bin/brew /usr/local/bin/brew; do
@@ -96,12 +123,13 @@ To finish the exact R setup manually, run these commands in Terminal:
   brew update
   brew install r-rig
   rig add $reference_r_version
-  rig default $reference_r_version
-  Rscript --version
+  rig list
   bash 2025_R03-SDOH/scripts/setup-macos.sh
 
 If the first command says the tools are already installed, continue to the next
-command. Exact-version R installer documentation: https://github.com/r-lib/rig
+command. The setup script discovers R by its reported version and does not
+depend on rig's platform-specific name or the shell's default R. Exact-version
+R installer documentation: https://github.com/r-lib/rig
 EOF
 }
 
@@ -200,24 +228,19 @@ git -C "$repo_root" check-ignore -q \
   "2025_R03-SDOH/private-data/$expected_workbook_name" || fail \
   "The private workbook is not protected by a Git ignore rule."
 
-rscript_command=${SDOH_RSCRIPT:-}
-if [[ -z "$rscript_command" ]]; then
-  rscript_command=$(command_path Rscript || true)
-else
-  rscript_command=$(command_path "$rscript_command" || true)
-fi
-
+rscript_command=$(find_reference_rscript || true)
 installed_r_version=""
-if [[ -n "$rscript_command" ]]; then
-  installed_r_version=$("$rscript_command" -e 'cat(as.character(getRversion()))' 2>/dev/null || true)
-fi
+if [[ -n "$rscript_command" ]]; then installed_r_version=$(r_version_for "$rscript_command"); fi
 
 if [[ "$installed_r_version" != "$reference_r_version" ]]; then
-  if [[ -z "$installed_r_version" ]]; then
+  active_rscript=$(command_path "${SDOH_RSCRIPT:-Rscript}" || true)
+  active_r_version=""
+  if [[ -n "$active_rscript" ]]; then active_r_version=$(r_version_for "$active_rscript" || true); fi
+  if [[ -z "$active_r_version" ]]; then
     printf 'R is not installed; installing reference R %s.\n' "$reference_r_version"
   else
-    printf 'Found R %s; installing and selecting reference R %s.\n' \
-      "$installed_r_version" "$reference_r_version"
+    printf 'Found R %s; installing reference R %s alongside it.\n' \
+      "$active_r_version" "$reference_r_version"
   fi
   require_brew
 
@@ -235,18 +258,14 @@ if [[ "$installed_r_version" != "$reference_r_version" ]]; then
   fi
   [[ -n "$rig_command" ]] || fail "Homebrew installed r-rig, but the rig command could not be found."
 
-  if ! "$rig_command" default "$reference_r_version" >/dev/null 2>&1; then
-    if ! "$rig_command" add "$reference_r_version" || \
-       ! "$rig_command" default "$reference_r_version"; then
-      show_r_instructions
-      fail "rig could not install and select R $reference_r_version."
-    fi
-  fi
+  rig_add_status=0
+  "$rig_command" add "$reference_r_version" || rig_add_status=$?
   hash -r
-  rscript_command=$(command_path Rscript || true)
+  rscript_command=$(find_reference_rscript || true)
   installed_r_version=""
-  if [[ -n "$rscript_command" ]]; then
-    installed_r_version=$("$rscript_command" -e 'cat(as.character(getRversion()))' 2>/dev/null || true)
+  if [[ -n "$rscript_command" ]]; then installed_r_version=$(r_version_for "$rscript_command"); fi
+  if [[ "$installed_r_version" != "$reference_r_version" && "$rig_add_status" -ne 0 ]]; then
+    printf 'rig add exited with status %s.\n' "$rig_add_status" >&2
   fi
 fi
 

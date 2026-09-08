@@ -16,7 +16,7 @@ bash 2025_R03-SDOH/scripts/setup-macos.sh
 ```
 
 The setup command creates the ignored private folders, safely copies the
-workbook from Downloads, checks its Git protection, installs/selects reference R
+workbook from Downloads, checks its Git protection, installs/locates reference R
 4.5.2 and Python 3.12 when needed, and then runs the complete pipeline. If
 Homebrew itself is absent, it stops with step-by-step installation instructions.
 No raw export, ResponseId crosswalk, pre-existing cache, or manually prepared

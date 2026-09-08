@@ -18,7 +18,7 @@ Most foundational work is complete in a reproducible N=709 working pipeline. The
 
   If the repository is already cloned, open its `grant-submissions` folder in
   Terminal and run only the final `bash` command. The command creates the protected
-  folders, copies the workbook, installs/selects reference R 4.5.2 and a
+  folders, copies the workbook, installs/locates reference R 4.5.2 and a
   compatible Python if needed, builds isolated package libraries, and runs the
   pipeline. If Homebrew is not installed, follow the numbered instructions the
   command prints, then rerun the same command.
