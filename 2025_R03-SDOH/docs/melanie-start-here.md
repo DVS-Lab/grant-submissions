@@ -4,7 +4,26 @@ Most foundational work is complete in a reproducible N=709 working pipeline. The
 
 ## Deliverable 1 — independent reproduction and validation
 
-- Start in a fresh clone with only `private-data/QualtricsData_SDOH_DEIDENTIFIED.xlsx` and run `bash 2025_R03-SDOH/scripts/run-private-pipeline.sh`.
+- Download the controlled handoff workbook to
+  `~/Downloads/QualtricsData_SDOH_DEIDENTIFIED.xlsx`; do not rename it, and do
+  not download or copy a raw export or ResponseId crosswalk.
+- For a new clone, open Terminal and run:
+
+  ```bash
+  cd "$HOME/Documents"
+  git clone https://github.com/DVS-Lab/grant-submissions.git
+  cd grant-submissions
+  bash 2025_R03-SDOH/scripts/setup-macos.sh
+  ```
+
+  If the repository is already cloned, open its `grant-submissions` folder in
+  Terminal and run only the final `bash` command. The command creates the protected
+  folders, copies the workbook, installs/selects reference R 4.5.2 and a
+  compatible Python if needed, builds isolated package libraries, and runs the
+  pipeline. If Homebrew is not installed, follow the numbered instructions the
+  command prints, then rerun the same command.
+- If the workbook is somewhere other than Downloads, run
+  `bash 2025_R03-SDOH/scripts/setup-macos.sh --source "/full/path/to/QualtricsData_SDOH_DEIDENTIFIED.xlsx"`.
 - Confirm `private-data/derived/reproduction-check.md` reports PASS, then preserve `run-provenance.json` for comparison.
 - Confirm Social Capital Atlas coverage reflects direct participant-current-ZIP
   matching with no ZCTA fallback; SDI, Gini, and PM2.5 remain ZCTA-linked.

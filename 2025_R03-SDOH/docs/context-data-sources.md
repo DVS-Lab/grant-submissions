@@ -18,6 +18,9 @@ an operational local cache inventory.
 
 - Organization: Robert Graham Center / American Academy of Family Physicians.
 - Release: ZCTA SDI based on ACS 2015–2019.
+- Retrieval: the current AAFP HTTPS asset is attempted first. A fixed Internet
+  Archive capture of the original Robert Graham Center download is the fallback;
+  either route must return the same pinned byte size and SHA-256 before use.
 - Documentation: <https://www.graham-center.org/evidence-based-research/featured-work/social-deprivation-index>
 - Download: <https://www.aafp.org/assets/raw/upload/v1779124857/asset_rgc_sdi_2015_through_2019_zcta.csv>
 - Direction: higher scores indicate greater social deprivation.

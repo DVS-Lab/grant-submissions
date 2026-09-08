@@ -28,16 +28,19 @@
       "construct": "social deprivation",
       "version": "ACS 2015–2019",
       "data_years": "2015–2019",
-      "retrieval_method": "direct HTTPS download",
+      "retrieval_method": "direct HTTPS download with checksum-matched archival fallback",
       "geography": "ZCTA",
       "scientific_role": "Neighborhood social deprivation exposure",
       "url": "https://www.aafp.org/assets/raw/upload/v1779124857/asset_rgc_sdi_2015_through_2019_zcta.csv",
+      "fallback_urls": [
+        "https://web.archive.org/web/20231213195651id_/https://www.graham-center.org/content/dam/rgc/documents/maps-data-tools/sdi/2015-2019-sdi/rgcsdi-2015-2019-zcta.csv"
+      ],
       "local_filename": "rgcsdi-2015-2019-zcta.csv",
       "sha256": "535e68c0fd12d287560a4cdb8e6f74256876558ee43f26e8cfd510ae6a7d2914",
       "bytes": 3630052,
       "expected_rows": 32989,
       "expected_columns": ["ZCTA5_FIPS", "ZCTA5_population", "SDI_score"],
-      "license_use_note": "Public research download; retain Robert Graham Center attribution."
+      "license_use_note": "Public research download; archival fallback preserves identical provider bytes; retain Robert Graham Center attribution."
     },
     {
       "id": "social_capital_atlas_zip_2022",

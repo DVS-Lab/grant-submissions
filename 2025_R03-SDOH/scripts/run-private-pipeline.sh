@@ -13,17 +13,23 @@ python_lock="$project_root/code/context/requirements-lock.txt"
 r_lock="$project_root/renv.lock"
 r_library="$reference_dir/.r-library"
 rscript_command=${SDOH_RSCRIPT:-Rscript}
+public_test_python=${SDOH_PUBLIC_TEST_PYTHON:-python3}
 
 if [[ ! -f "$source_data" ]]; then
-  printf 'ERROR: place QualtricsData_SDOH_DEIDENTIFIED.xlsx in 2025_R03-SDOH/private-data/.\n' >&2
+  printf 'ERROR: the deidentified workbook was not found. On macOS, place QualtricsData_SDOH_DEIDENTIFIED.xlsx in ~/Downloads and run bash 2025_R03-SDOH/scripts/setup-macos.sh; it creates the protected folders and copies the file.\n' >&2
   exit 1
 fi
-if ! command -v python3 >/dev/null 2>&1; then
-  printf 'ERROR: python3 (3.9+ for public tests; 3.11+ for the spatial environment) is required.\n' >&2
+if ! command -v "$public_test_python" >/dev/null 2>&1 && [[ ! -x "$public_test_python" ]]; then
+  printf 'ERROR: Python is required. On macOS, run bash 2025_R03-SDOH/scripts/setup-macos.sh to install and configure Python 3.12.\n' >&2
   exit 1
 fi
-if ! command -v "$rscript_command" >/dev/null 2>&1; then
-  printf 'ERROR: Rscript is required. Reference runtime: R 4.5.2.\n' >&2
+if ! command -v "$rscript_command" >/dev/null 2>&1 && [[ ! -x "$rscript_command" ]]; then
+  printf 'ERROR: Rscript is required. On macOS, run bash 2025_R03-SDOH/scripts/setup-macos.sh to install and select reference R 4.5.2.\n' >&2
+  exit 1
+fi
+active_r_version=$("$rscript_command" -e 'cat(as.character(getRversion()))' 2>/dev/null || true)
+if [[ "$active_r_version" != "4.5.2" ]]; then
+  printf 'ERROR: active R is %s; reference R 4.5.2 is required. On macOS, run bash 2025_R03-SDOH/scripts/setup-macos.sh.\n' "${active_r_version:-unknown}" >&2
   exit 1
 fi
 if [[ -n $(git -C "$repo_root" ls-files "2025_R03-SDOH/private-data") ]]; then
@@ -51,6 +57,7 @@ export SDOH_SOURCE_DATA="$source_data"
 export SDOH_PRIVATE_DERIVATIVES_DIR="$private_derivatives"
 export SDOH_EXPECTED_N=709
 export SDOH_CACHE_LOG="$cache_log"
+export SDOH_PUBLIC_TEST_PYTHON="$public_test_python"
 
 printf 'Running participant-free public contracts\n'
 bash "$project_root/scripts/test-public-contracts.sh"

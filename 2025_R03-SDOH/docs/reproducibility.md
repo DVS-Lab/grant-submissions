@@ -1,23 +1,52 @@
 # Reproducing the private SDOH pipeline
 
-This is the canonical technical guide. The handoff requires one private file and one command.
+This is the canonical technical guide. On macOS, the handoff requires one
+private file and one setup command.
 
 ## Minimum input
 
-Clone the public repository, then place only:
+On a Mac, download only the reviewed handoff file to:
 
 ```text
-2025_R03-SDOH/private-data/QualtricsData_SDOH_DEIDENTIFIED.xlsx
+~/Downloads/QualtricsData_SDOH_DEIDENTIFIED.xlsx
 ```
 
-Do not copy the raw Qualtrics export, a ResponseId crosswalk, another analyst's cache, or old private results.
+Keep that exact filename. The setup helper creates the ignored project folders
+and copies it into the required location. Do not copy the raw Qualtrics export,
+a ResponseId crosswalk, another analyst's cache, or old private results.
+
+For a new clone, open Terminal and run:
+
+```bash
+cd "$HOME/Documents"
+git clone https://github.com/DVS-Lab/grant-submissions.git
+cd grant-submissions
+bash 2025_R03-SDOH/scripts/setup-macos.sh
+```
+
+If the repository is already cloned, change into its root directory and run
+only the final command.
 
 ## Requirements
 
-- Git, `curl`, and internet access for the first run.
-- R. The reference run used R 4.5.2 on Apple Silicon macOS; `renv.lock` records exact package versions and the runner restores them into ignored `private-data/reference/.r-library`, never the global library.
-- Python 3.11 or newer with `venv` (plus any `python3` 3.9+ executable for the pre-bootstrap public tests). The reference run used Python 3.12.14 on Apple Silicon macOS. Direct requirements are in `requirements.in`; the complete 19-package reference resolution is in `requirements-lock.txt`. Binary availability for geospatial packages can differ by Python version, architecture, and operating system, so a platform without compatible wheels may need compilers/system GIS libraries while retaining the same pins. Set `SDOH_BOOTSTRAP_PYTHON` only when automatic interpreter discovery cannot find the intended 3.11+ interpreter.
-- Free disk space. The public Git repository is small; the ignored local cache can reach roughly 0.5–1 GB because it contains Python/R libraries, eleven annual PM2.5 grids, and Census geometry.
+- macOS: Git, `curl`, internet access, and roughly 0.5–1 GB of free disk space.
+  The setup helper installs missing R/Python
+  runtimes through Homebrew. If Homebrew is absent, it prints the exact manual
+  prerequisite steps because installing Apple's command-line tools and
+  Homebrew may require a GUI confirmation or administrator password.
+- R 4.5.2. On macOS, the helper installs the Homebrew `r-rig` version manager,
+  installs the exact reference R, and selects it. `renv.lock` records exact R
+  package versions; the runner restores them into ignored
+  `private-data/reference/.r-library`, never the global library.
+- Python 3.11 or newer with `venv`. On macOS, the helper installs Python 3.12 if
+  no compatible interpreter exists. The reference run used Python 3.12.14 on
+  Apple Silicon macOS. Direct requirements are in `requirements.in`; the
+  complete 19-package reference resolution is in `requirements-lock.txt`.
+  Binary availability for geospatial packages can differ by Python version,
+  architecture, and operating system, so another platform may need
+  compilers/system GIS libraries while retaining the same pins.
+  The ignored local cache contains Python/R libraries, eleven annual PM2.5
+  grids, and Census geometry.
 
 Reference reproduction was performed on Apple Silicon macOS. Other Unix-like
 platforms should be feasible but have not been independently clean-room tested;
@@ -25,15 +54,57 @@ native Windows is not currently a tested configuration.
 
 The first run installs isolated dependencies, downloads checksummed public files, and performs polygon/raster aggregation, so it can take many minutes. Later runs verify and reuse the cache.
 
-## One-command run
+## First-time Mac setup and run
 
 From the repository root:
 
 ```bash
-bash 2025_R03-SDOH/scripts/run-private-pipeline.sh
+bash 2025_R03-SDOH/scripts/setup-macos.sh
 ```
 
-The command (1) checks privacy and participant-free public contracts, (2) creates/repairs isolated Python and R environments, (3) validates and scores the workbook, (4) downloads verified fixed-vintage national context files without transmitting participant geography, (5) links ZIP-native Social Capital Atlas and RUCA directly to current ZIP, uses crosswalked ZCTA for SDI/Gini/PM2.5, and builds the 709×91 geography-free analysis master, (6) reruns 35 historical formulas and the fixed 216-model grant-driven framework, (7) generates 11 private draft figures and review documents, (8) checks the public reproduction contract, and (9) writes private run provenance.
+The helper looks in Downloads by default. To use a different location:
+
+```bash
+bash 2025_R03-SDOH/scripts/setup-macos.sh --source "/full/path/to/QualtricsData_SDOH_DEIDENTIFIED.xlsx"
+```
+
+Use `--prepare-only` to create/import the private input and settle system
+dependencies without starting the analysis. After first-time setup, either
+setup command can be rerun safely; it reuses verified environments and caches.
+
+The workflow (1) checks privacy and participant-free public contracts, (2)
+creates/repairs isolated Python and R environments, (3) validates and scores the
+workbook, (4) downloads verified fixed-vintage national context files without
+transmitting participant geography, (5) links ZIP-native Social Capital Atlas
+and RUCA directly to current ZIP, uses crosswalked ZCTA for SDI/Gini/PM2.5, and
+builds the 709×91 geography-free analysis master, (6) reruns 35 historical
+formulas and the fixed 216-model grant-driven framework, (7) generates 11
+private draft figures and review documents, (8) checks the public reproduction
+contract, and (9) writes private run provenance.
+
+## Manual fallback when Homebrew is missing
+
+The setup helper prints these same steps and stops before analysis:
+
+1. Open Terminal.
+2. Run `xcode-select --install` and complete Apple's prompt if command-line
+   tools are not already present.
+3. Install Homebrew using the official command at
+   <https://brew.sh/>.
+4. Run the PATH command printed under Homebrew's **Next steps**. On most
+   Apple-silicon Macs it is `eval "$(/opt/homebrew/bin/brew shellenv)"`.
+5. Return to the repository and rerun
+   `bash 2025_R03-SDOH/scripts/setup-macos.sh`.
+
+If automatic exact-R setup alone fails, run:
+
+```bash
+brew install r-rig
+rig add 4.5.2
+rig default 4.5.2
+Rscript --version
+bash 2025_R03-SDOH/scripts/setup-macos.sh
+```
 
 ## Expected success
 
@@ -51,11 +122,22 @@ and 11 PNG figures. The authoritative public contract is
 
 ## Troubleshooting
 
-- **Workbook missing:** confirm the exact filename and default location above.
+- **Workbook missing:** save it under the exact filename in `~/Downloads`, or
+  pass its full path with `--source`. The helper creates the project folder.
 - **No internet/transient failure:** keep the verified cache and rerun. Downloads use three attempts, timeouts, `.part` files, exact byte sizes, and SHA-256 checks; an interrupted file is not accepted.
-- **Python unavailable:** install a Python 3 distribution that includes `venv`. To use an existing compatible environment, set `SDOH_CONTEXT_PYTHON`; the runner verifies it but never modifies it.
+- **AAFP certificate error:** the SDI downloader automatically tries the fixed
+  archival capture of the original Robert Graham Center file and accepts it only
+  when its uncompressed bytes match the same pinned size and SHA-256. Do not use
+  `curl -k` or disable TLS verification.
+- **R or Python unavailable on a Mac:** use `setup-macos.sh`, not the lower-level
+  runner. Follow its Homebrew instructions if it cannot install the runtimes.
+- **Python unavailable on another platform:** install Python 3.11+ with `venv`.
+  To use an existing compatible environment, set `SDOH_CONTEXT_PYTHON`; the
+  runner verifies it but never modifies it.
 - **Pinned Python wheel unavailable:** use Python 3.12 on a supported 64-bit platform or install the platform compiler/GDAL prerequisites. Do not loosen the lock silently; document any necessary alternate resolution.
-- **R package build failure:** install the operating-system compiler tools required by R and rerun. The ignored local library can be rebuilt without changing the global R library.
+- **R package build failure:** run `xcode-select --install`, complete the Apple
+  prompt if one appears, and rerun. The ignored local library can be rebuilt
+  without changing the global R library.
 - **External source checksum/schema changed:** do not bypass the check. Compare the provider's fixed release with `config/reproducibility-sources.json`, document the change, and update code/config only after scientific review.
 - **Insufficient disk:** use the cache dry run below, then remove the rebuildable cache. Private scientific results are not removed.
 - **Discrepancy:** preserve `reproduction-check.md` and `run-provenance.json`; record the failed check, Git SHA, platform, and error text, without participant values or geography.

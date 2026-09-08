@@ -29,6 +29,22 @@ def numeric_vector(source: str, name: str) -> list[float]:
 def main() -> int:
     project = Path(__file__).resolve().parents[1]
     scoring = (project / "code/pipeline/02_score_core_measures.R").read_text(encoding="utf-8")
+    mac_setup = (project / "scripts/setup-macos.sh").read_text(encoding="utf-8")
+
+    for required_fragment in (
+        'expected_workbook_name="QualtricsData_SDOH_DEIDENTIFIED.xlsx"',
+        '$HOME/Downloads/$expected_workbook_name',
+        'mkdir -p',
+        'git -C "$repo_root" check-ignore',
+        'reference_r_version="4.5.2"',
+        'install r-rig',
+        'add "$reference_r_version"',
+        'default "$reference_r_version"',
+        'install python@3.12',
+    ):
+        require(required_fragment in mac_setup, f"macOS setup contract missing: {required_fragment}")
+    require("this script will not overwrite it" in mac_setup,
+            "macOS setup must not overwrite a different private workbook")
 
     oafem = csv_rows(project / "docs/oafem-item-map.csv")
     require(len(oafem) == 30, "OAFEM map must have 30 rows")
@@ -79,11 +95,21 @@ def main() -> int:
     require("latest" not in json.dumps(manifest).lower(), "Mutable 'latest' reference found in source manifest")
     pm = next(source for source in manifest["sources"] if source["id"] == "acag_pm25_v5na05")
     require([item["year"] for item in pm["files"]] == list(range(2012, 2023)), "PM2.5 year set changed")
+    sdi = next(source for source in manifest["sources"] if source["id"] == "rgc_sdi_2015_2019")
+    require(len(sdi.get("fallback_urls", [])) == 1 and
+            sdi["fallback_urls"][0].startswith("https://web.archive.org/web/20231213195651id_/"),
+            "SDI must retain its fixed checksum-matched archival fallback")
     for source in manifest["sources"]:
+        require(all(url.startswith("https://") for url in source.get("fallback_urls", [])),
+                "Source fallback URLs must use HTTPS")
         items = source.get("files", [source])
         for item in items:
             require(re.fullmatch(r"[0-9a-f]{64}", item["sha256"]) is not None, "Invalid source SHA-256")
             require(item["bytes"] > 0 and item["url"].startswith("https://"), "Incomplete source pin")
+
+    context_helpers = (project / "code/context/_context_helpers.R").read_text(encoding="utf-8")
+    require('"--compressed"' in context_helpers and "entry$fallback_urls" in context_helpers,
+            "Verified downloader must decode transport compression and try configured fallbacks")
 
     contract = json.loads((project / "config/reproduction-contract.json").read_text(encoding="utf-8"))
     require(contract["source_workbook"] == {"worksheets": 1, "rows": 709, "columns": 300},

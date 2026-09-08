@@ -81,17 +81,27 @@ download_verified <- function(entry, destination = file.path(reference_dir(), en
   dir.create(dirname(destination), recursive = TRUE, showWarnings = FALSE)
   temporary <- paste0(destination, ".part")
   on.exit(unlink(temporary), add = TRUE)
-  status <- system2("curl", c(
-    "--fail", "--location", "--retry", "3", "--retry-all-errors",
-    "--connect-timeout", "30", "--max-time", "900",
-    "--output", shQuote(temporary), shQuote(entry$url)
-  ))
-  if (!identical(status, 0L)) stop("Download failed for public source ", entry$id, ".")
-  actual_bytes <- unname(file.info(temporary)$size)
-  actual_sha <- sha256(temporary)
-  if (!identical(actual_bytes, expected_bytes) || !identical(tolower(actual_sha), tolower(entry$sha256))) {
-    stop("Checksum or byte-size mismatch for public source ", entry$id, ".")
+  fallback_urls <- if (is.null(entry$fallback_urls)) character() else unlist(entry$fallback_urls)
+  download_urls <- c(entry$url, fallback_urls)
+  installed <- FALSE
+  for (download_url in download_urls) {
+    unlink(temporary)
+    status <- system2("curl", c(
+      "--fail", "--location", "--compressed", "--retry", "3", "--retry-all-errors",
+      "--connect-timeout", "30", "--max-time", "900",
+      "--output", shQuote(temporary), shQuote(download_url)
+    ))
+    if (!identical(status, 0L) || !file.exists(temporary)) next
+    actual_bytes <- unname(file.info(temporary)$size)
+    actual_sha <- sha256(temporary)
+    if (identical(actual_bytes, expected_bytes) &&
+        identical(tolower(actual_sha), tolower(entry$sha256))) {
+      installed <- TRUE
+      break
+    }
+    warning("Checksum or byte-size mismatch from one configured URL for public source ", entry$id, "; trying the next configured URL.")
   }
+  if (!installed) stop("No configured HTTPS URL returned the checksum-pinned bytes for public source ", entry$id, ".")
   if (!file.rename(temporary, destination)) stop("Could not install downloaded source ", entry$id, ".")
   cache_event(entry$id, entry$local_filename, "downloaded")
   validate_tabular_source(entry, destination)

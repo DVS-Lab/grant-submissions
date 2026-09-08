@@ -7,17 +7,21 @@ private and untracked.
 
 ## Canonical analyst workflow
 
-Clone the repository, place the single controlled handoff file at
-`2025_R03-SDOH/private-data/QualtricsData_SDOH_DEIDENTIFIED.xlsx`, then run from
-the repository root:
+On a Mac, clone the repository and download the single controlled handoff file
+as `~/Downloads/QualtricsData_SDOH_DEIDENTIFIED.xlsx`. Then run from the
+repository root:
 
 ```bash
-bash 2025_R03-SDOH/scripts/run-private-pipeline.sh
+bash 2025_R03-SDOH/scripts/setup-macos.sh
 ```
 
+The setup command creates the ignored private folders, safely copies the
+workbook from Downloads, checks its Git protection, installs/selects reference R
+4.5.2 and Python 3.12 when needed, and then runs the complete pipeline. If
+Homebrew itself is absent, it stops with step-by-step installation instructions.
 No raw export, ResponseId crosswalk, pre-existing cache, or manually prepared
-environment is required. The command bootstraps isolated dependencies; validates
-the source and privacy boundary; completes weighted
+R/Python package library is required. The workflow validates the source and
+privacy boundary; completes weighted
 OAFEM, PROMIS-29 v2.0, CTB, fraud, and other core scoring; downloads and links
 public context sources using direct ZIP linkage or ZCTA linkage as appropriate;
 builds a geography-free private analysis
