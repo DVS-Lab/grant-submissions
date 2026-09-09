@@ -32,7 +32,7 @@ bash 2025_R03-SDOH/scripts/setup-macos.sh
 The helper creates `private-data/`, `derived/`, and `reference/`; copies the
 workbook without overwriting a different existing copy; applies owner-only file
 permissions; and verifies that Git ignores it. It installs/locates reference R
-4.5.2 and Python 3.12 through Homebrew only when needed. The pipeline then
+4.5.2 and a compatible Python through Homebrew only when needed. The pipeline then
 creates isolated Python and R package libraries and caches verified public
 context downloads under ignored `private-data/reference/`.
 

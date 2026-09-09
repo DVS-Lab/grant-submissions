@@ -42,7 +42,10 @@ def main() -> int:
         'find_reference_rscript',
         'candidate_version=$(r_version_for "$candidate_path"',
         '/Library/Frameworks/R.framework/Versions/*/Resources/bin/Rscript',
-        'install python@3.12',
+        'find_compatible_python',
+        '/opt/homebrew/bin/python3.13',
+        'install "$python_formula"',
+        'python@3.13 python@3.12',
     ):
         require(required_fragment in mac_setup, f"macOS setup contract missing: {required_fragment}")
     require("this script will not overwrite it" in mac_setup,

@@ -20,7 +20,7 @@ if [[ ! -f "$source_data" ]]; then
   exit 1
 fi
 if ! command -v "$public_test_python" >/dev/null 2>&1 && [[ ! -x "$public_test_python" ]]; then
-  printf 'ERROR: Python is required. On macOS, run bash 2025_R03-SDOH/scripts/setup-macos.sh to install and configure Python 3.12.\n' >&2
+  printf 'ERROR: Python is required. On macOS, run bash 2025_R03-SDOH/scripts/setup-macos.sh to install and configure a compatible Homebrew Python.\n' >&2
   exit 1
 fi
 if ! command -v "$rscript_command" >/dev/null 2>&1 && [[ ! -x "$rscript_command" ]]; then

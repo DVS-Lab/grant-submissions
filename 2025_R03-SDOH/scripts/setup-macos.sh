@@ -73,6 +73,35 @@ find_reference_rscript() {
   return 1
 }
 
+python_is_compatible() {
+  local candidate=$1
+  [[ -x "$candidate" ]] || return 1
+  "$candidate" -c 'import sys, venv; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)' \
+    >/dev/null 2>&1
+}
+
+find_compatible_python() {
+  local candidate candidate_path
+  for candidate in \
+    "${SDOH_BOOTSTRAP_PYTHON:-}" \
+    python3.13 python3.12 python3.14 python3 \
+    /opt/homebrew/bin/python3.13 /opt/homebrew/bin/python3.12 /opt/homebrew/bin/python3.14 \
+    /usr/local/bin/python3.13 /usr/local/bin/python3.12 /usr/local/bin/python3.14 \
+    /opt/homebrew/opt/python@3.13/bin/python3.13 \
+    /opt/homebrew/opt/python@3.12/bin/python3.12 \
+    /usr/local/opt/python@3.13/bin/python3.13 \
+    /usr/local/opt/python@3.12/bin/python3.12; do
+    [[ -n "$candidate" ]] || continue
+    candidate_path=$(command_path "$candidate" || true)
+    [[ -n "$candidate_path" ]] || continue
+    if python_is_compatible "$candidate_path"; then
+      printf '%s\n' "$candidate_path"
+      return 0
+    fi
+  done
+  return 1
+}
+
 find_brew() {
   local candidate
   for candidate in brew /opt/homebrew/bin/brew /usr/local/bin/brew; do
@@ -138,13 +167,17 @@ show_python_instructions() {
 
 To finish Python setup manually, run these commands in Terminal:
 
-  xcode-select --install
+  xcode-select -p
+  brew doctor
   brew update
-  brew install python@3.12
+  brew install python@3.13
+  "$(brew --prefix python@3.13)/bin/python3.13" --version
   bash 2025_R03-SDOH/scripts/setup-macos.sh
 
-If the first command says the tools are already installed, continue to the next
-command.
+If `xcode-select -p` reports that no active developer directory exists, run
+`xcode-select --install`, complete Apple's dialog, and then repeat these steps.
+Homebrew itself does not request `sudo` for this Python installation. Preserve
+the complete `brew doctor` and `brew install` output if the command still fails.
 EOF
 }
 
@@ -275,31 +308,37 @@ if [[ "$installed_r_version" != "$reference_r_version" ]]; then
 fi
 printf 'R dependency ready: %s (%s)\n' "$rscript_command" "$installed_r_version"
 
-python_command=""
-python_candidates=()
-if [[ -n "${SDOH_BOOTSTRAP_PYTHON:-}" ]]; then
-  python_candidates+=("$SDOH_BOOTSTRAP_PYTHON")
-fi
-python_candidates+=(python3.12 python3.13 python3.14 python3)
-
-for candidate in "${python_candidates[@]}"; do
-  candidate_path=$(command_path "$candidate" || true)
-  [[ -n "$candidate_path" ]] || continue
-  if "$candidate_path" -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)' >/dev/null 2>&1; then
-    python_command=$candidate_path
-    break
-  fi
-done
+python_command=$(find_compatible_python || true)
 
 if [[ -z "$python_command" ]]; then
-  printf 'Python 3.11 or newer is not installed; installing Python 3.12.\n'
+  printf 'Python 3.11 or newer is not installed; trying Homebrew Python 3.13, then 3.12.\n'
   require_brew
-  if ! "$brew_command" install python@3.12; then
+  python_install_failures=""
+  for python_formula in python@3.13 python@3.12; do
+    python_install_status=0
+    "$brew_command" install "$python_formula" || python_install_status=$?
+
+    # Homebrew can return nonzero after installing enough of a formula to leave
+    # a usable interpreter. Rediscover and verify before treating that as fatal.
+    python_command=$(find_compatible_python || true)
+    if [[ -z "$python_command" ]]; then
+      python_prefix=$($brew_command --prefix "$python_formula" 2>/dev/null || true)
+      python_minor=${python_formula#python@}
+      if [[ -n "$python_prefix" ]] && python_is_compatible "$python_prefix/bin/python$python_minor"; then
+        python_command="$python_prefix/bin/python$python_minor"
+      fi
+    fi
+    [[ -n "$python_command" ]] && break
+    python_install_failures="${python_install_failures}${python_formula}=${python_install_status} "
+    printf 'Homebrew %s did not leave a compatible interpreter; trying the next supported formula.\n' \
+      "$python_formula" >&2
+  done
+
+  if [[ -z "$python_command" ]]; then
+    printf 'Homebrew Python attempts: %s\n' "$python_install_failures" >&2
     show_python_instructions
-    fail "Homebrew could not install Python 3.12."
+    fail "Homebrew did not provide a usable Python 3.11 or newer interpreter."
   fi
-  python_prefix=$($brew_command --prefix python@3.12)
-  python_command="$python_prefix/bin/python3.12"
 fi
 
 [[ -x "$python_command" ]] || fail "A compatible Python interpreter could not be found."

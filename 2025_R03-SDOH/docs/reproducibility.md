@@ -40,8 +40,11 @@ only the final command.
   name (for example, `4.5-arm64`) or changing the Mac's global default R.
   `renv.lock` records exact R package versions; the runner restores them into ignored
   `private-data/reference/.r-library`, never the global library.
-- Python 3.11 or newer with `venv`. On macOS, the helper installs Python 3.12 if
-  no compatible interpreter exists. The reference run used Python 3.12.14 on
+- Python 3.11 or newer with `venv`. On macOS, the helper first discovers
+  compatible Homebrew interpreters even when Homebrew is not on `PATH`. If none
+  exists, it tries Python 3.13 and then Python 3.12. Both currently have
+  Homebrew bottles for Apple-silicon macOS Tahoe. The reference run used Python
+  3.12.14, and the handoff was also clean-room tested with Python 3.13.12, on
   Apple Silicon macOS. Direct requirements are in `requirements.in`; the
   complete 19-package reference resolution is in `requirements-lock.txt`.
   Binary availability for geospatial packages can differ by Python version,
@@ -136,6 +139,11 @@ and 11 PNG figures. The authoritative public contract is
   `curl -k` or disable TLS verification.
 - **R or Python unavailable on a Mac:** use `setup-macos.sh`, not the lower-level
   runner. Follow its Homebrew instructions if it cannot install the runtimes.
+- **Homebrew could not install Python:** rerun after `git pull`; the helper now
+  detects usable partial/existing installations and tries both supported Python
+  formulas. Homebrew does not need `sudo` for this step. If both attempts fail,
+  follow the printed `xcode-select -p`, `brew doctor`, and `brew install`
+  diagnostics; retain their complete output.
 - **`rig` says installation succeeded and then says R is not installed:** do not
   uninstall R. Run `git pull`, then rerun `setup-macos.sh`. The helper checks
   architecture-specific framework installations directly and does not require
